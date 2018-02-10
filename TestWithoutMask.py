@@ -17,7 +17,7 @@ parser.add_argument("--decoder_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/fea
 parser.add_argument("--matrixPath", default='weights/r31.pth', help='maybe print interval')
 parser.add_argument("--stylePath", default="data/style/", help='path to style image')
 parser.add_argument("--contentPath", default="data/content/", help='folder to training image')
-parser.add_argument("--outf", default="TestWithMask/", help='folder to output images and model checkpoints')
+parser.add_argument("--outf", default="TestWithoutMask/", help='folder to output images and model checkpoints')
 parser.add_argument("--batchSize", type=int,default=1, help='batch size')
 parser.add_argument('--loadSize', type=int, default=256, help='image size')
 parser.add_argument('--fineSize', type=int, default=256, help='image size')
@@ -45,7 +45,7 @@ except OSError:
 cudnn.benchmark = True
 
 ################# DATA #################
-content_dataset = Dataset(opt.contentPath,opt.loadSize,opt.fineSize)
+content_dataset = Dataset(opt.contentPath,opt.loadSize,opt.fineSize,test=True)
 content_loader = torch.utils.data.DataLoader(dataset=content_dataset,
 					      batch_size = opt.batchSize,
 				 	      shuffle = False,

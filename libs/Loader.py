@@ -26,11 +26,17 @@ class Dataset(data.Dataset):
         self.dataPath = dataPath
         self.image_list = [x for x in listdir(dataPath) if is_image_file(x)]
         #self.image_list = sorted(self.image_list)
-        self.transform = transforms.Compose([
-        		transforms.Scale(fineSize),
-        		transforms.RandomCrop(fineSize),
-                transforms.RandomHorizontalFlip(),
-        		transforms.ToTensor()])
+        if not test:
+            self.transform = transforms.Compose([
+            		     transforms.Scale(fineSize),
+            		     transforms.RandomCrop(fineSize),
+                             transforms.RandomHorizontalFlip(),
+            		     transforms.ToTensor()])
+        else:
+            self.transform = transforms.Compose([
+            		     transforms.Scale(fineSize),
+            		     transforms.ToTensor()])
+
         self.test = test
 
     def __getitem__(self,index):

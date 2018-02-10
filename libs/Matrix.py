@@ -2,49 +2,6 @@ import torch.nn as nn
 import torch
 import torch.nn.functional as F
 
-'''
-class Matrix(nn.Module):
-    def __init__(self):
-        super(Matrix,self).__init__()
-        # 32x32
-        self.net1 = nn.Sequential(nn.Conv2d(512,512,3,2,1,groups=512),
-                                  nn.ReLU(),
-                                  nn.Conv2d(512,512,3,2,1,groups=512),
-                                  nn.ReLU(),
-                                  nn.Conv2d(512,512,8,1,0,groups=512))
-        self.net2 = nn.Sequential(nn.Conv2d(512,512,3,2,1,groups=512),
-                                  nn.ReLU(),
-                                  nn.Conv2d(512,512,3,2,1,groups=512),
-                                  nn.ReLU(),
-                                  nn.Conv2d(512,512,8,1,0,groups=512))
-
-        #self.compress = nn.Conv2d(512,64,1,1,0)
-        #self.unzip = nn.Conv2d(64,512,1,1,0)
-
-    def forward(self,cF,sF):
-        # minus mean
-        cb,cc,ch,cw = cF.size()
-        cFF = cF.view(cb,cc,-1)
-        cMean = torch.mean(cFF,dim=2,keepdim=True)
-        cMean = cMean.unsqueeze(3)
-        cMean = cMean.expand_as(cF)
-        #cF = cF - cMean
-
-        sb,sc,sh,sw = sF.size()
-        sFF = sF.view(sb,sc,-1)
-        sMean = torch.mean(sFF,dim=2,keepdim=True)
-        sMean = sMean.unsqueeze(3)
-        sMean = sMean.expand_as(cF)
-        #sF = sF - sMean
-
-        cbranch = self.net1(cF) # 64x16x16
-        sbranch = self.net2(sF) # 64x16x16
-        tF = (cF - cMean) * cbranch.expand_as(cF) * sbranch.expand_as(sF) + sMean
-        #matrix = self.linear(out.view(out.size(0),-1)) #64x64
-
-        return tF
-'''
-
 class CNN(nn.Module):
     def __init__(self):
         super(CNN,self).__init__()
