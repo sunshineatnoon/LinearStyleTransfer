@@ -12,7 +12,6 @@ from libs.Loader import Dataset
 from libs.models import encoder4 as loss_network
 from libs.Matrix import MulLayer
 from libs.Criterion import LossCriterion
-from libs.logger import Logger
 from torch.utils.serialization import load_lua
 
 parser = argparse.ArgumentParser()
@@ -120,7 +119,6 @@ iden_matrix = torch.eye(32)
 iden_matrix = iden_matrix.repeat(opt.batchSize,1)
 iden_matrixV = Variable(iden_matrix)
 loss_layers = opt.style_layers + opt.content_layers
-logger = Logger(os.path.join('/home/xtli/Documents/ECCV2018/logs/',opt.outf))
 
 ################# GPU  #################
 if(opt.cuda):
@@ -201,23 +199,6 @@ for iteration in range(1,opt.niter+1):
     adjust_learning_rate(optimizer,iteration)
 
     print('Iteration: [%d/%d] Loss: %f contentLoss: %f styleLoss: %f regLoss %f Learng Rate is %7f'%(opt.niter,iteration,loss.data[0],contentLoss,styleLoss,reg_loss.data[0]*opt.reg_weight,optimizer.param_groups[0]['lr']))
-
-    if(iteration % 10 == 0):
-        # logging
-        info = {
-                'styleLoss': styleLoss,
-                'contentLoss': contentLoss,
-                'regLoss': reg_loss.data[0],
-                'totalLoss': totalLoss.data[0],
-            }
-        for tag, value in info.items():
-                logger.scalar_summary(tag, value, iteration+1)
-        #display_img = torch.cat((content[0].unsqueeze(0),style[0].unsqueeze(0),transfer[0].unsqueeze(0).data.cpu()),dim=0)
-        #info = {
-        #    'images': display_img.numpy()
-        #}
-        #for tag, images in info.items():
-        #    logger.image_summary(tag, images, iteration+1)
 
     if((iteration) % opt.log_interval == 0):
         transfer = transfer.clamp(0,1)
