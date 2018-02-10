@@ -1,20 +1,22 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
-import scipy.misc
 
 class styleLoss(nn.Module):
     def forward(self,input,target):
-        iMean = torch.mean(input,dim=1)
-        iVar = torch.var(input,dim=1)
+        ib,ic,ih,iw = input.size()
+        iF = input.view(ib,ic,-1)
+        iMean = torch.mean(iF,dim=2)
+        iVar = torch.var(iF,dim=2)
         iStd = torch.sqrt(iVar + 1e-6)
 
-        tMean = torch.mean(target,dim=1)
-        tVar = torch.var(target,dim=1)
+        tb,tc,th,tw = target.size()
+        tF = target.view(tb,tc,-1)
+        tMean = torch.mean(tF,dim=2)
+        tVar = torch.var(tF,dim=2)
         tStd = torch.sqrt(tVar + 1e-6)
 
         loss = nn.MSELoss(size_average=False)(iMean,tMean) + nn.MSELoss(size_average=False)(iStd,tStd)
-	return loss
+	return loss/tb
 '''
 class GramMatrix(nn.Module):
     def forward(self,input):
@@ -44,49 +46,26 @@ class LossCriterion(nn.Module):
         self.styleLosses = [styleLoss()] * len(style_layers)
         self.contentLosses = [nn.MSELoss()] * len(content_layers)
 
-    def forward(self,tF,sF,cF,smask,cmask):
+    def forward(self,tF,sF,cF):
         #feature = feature.detach()
         # content loss
         totalContentLoss = 0
         for i,layer in enumerate(self.content_layers):
-            tf_i = tF[layer]
-            b,c,h,w = tf_i.size()
-
-            cmask = torch.from_numpy(scipy.misc.imresize(cmask.numpy(),(h,w))/255.0)
-            cmask = cmask.view(-1)
-            fgcmask = (cmask==1).nonzero().squeeze(1)
-            fgcmask = Variable(fgcmask.cuda(0),requires_grad=False)
             cf_i = cF[layer]
             cf_i = cf_i.detach()
+            tf_i = tF[layer]
             loss_i = self.contentLosses[i]
-
-            # select out masked features
-            tf_i = tf_i.view(c,-1)
-            cf_i = cf_i.view(c,-1)
-            tf_i_select = torch.index_select(tf_i,1,fgcmask)
-            cf_i_select = torch.index_select(cf_i,1,fgcmask)
-            totalContentLoss += loss_i(tf_i_select,cf_i_select)
+            totalContentLoss += loss_i(tf_i,cf_i)
         totalContentLoss = totalContentLoss * self.content_weight
 
         # style loss
         totalStyleLoss = 0
         for i,layer in enumerate(self.style_layers):
-            tf_i = tF[layer]
-            b,c,h,w = tf_i.size()
-
-            smask = torch.from_numpy(scipy.misc.imresize(smask.numpy(),(h,w))/255.0)
-            smask = smask.view(-1)
-            fgsmask = (smask==1).nonzero().squeeze(1)
-            fgsmask = Variable(fgsmask.cuda(0),requires_grad=False)
             sf_i = sF[layer]
             sf_i = sf_i.detach()
+            tf_i = tF[layer]
             loss_i = self.styleLosses[i]
-
-            tf_i = tf_i.view(c,-1)
-            sf_i = sf_i.view(c,-1)
-            tf_i_select = torch.index_select(tf_i,1,fgsmask)
-            sf_i_select = torch.index_select(sf_i,1,fgsmask)
-            totalStyleLoss += loss_i(tf_i_select,sf_i_select)
+            totalStyleLoss += loss_i(tf_i,sf_i)
         totalStyleLoss = totalStyleLoss * self.style_weight
         loss = totalStyleLoss + totalContentLoss
 

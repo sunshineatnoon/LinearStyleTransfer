@@ -110,8 +110,7 @@ class Dataset(data.Dataset):
         self.styleSegPath = styleSegPath
         self.fineSize = fineSize
         self.transform = transforms.Compose([
-        		transforms.Scale((fineSize,fineSize)),
-                #transforms.CenterCrop(fineSize),
+        		transforms.Scale(fineSize),
         		transforms.ToTensor()])
 
     def __getitem__(self,index):
@@ -133,12 +132,6 @@ class Dataset(data.Dataset):
             styleSegImg = Image.new('RGB', (styleImg.size))
 
 
-        # resize
-        #contentImg = resize(contentImg,self.fineSize)
-        #styleImg = resize(styleImg,self.fineSize)
-        #contentSegImg = resize(contentSegImg,self.fineSize)
-        #styleSegImg = resize(styleSegImg,self.fineSize)
-
         # Turning segmentation images into masks
         styleSegImg = self.transform(styleSegImg)
         contentSegImg = self.transform(contentSegImg)
@@ -146,14 +139,14 @@ class Dataset(data.Dataset):
         style_masks = ExtractMask(styleSegImg)
 
         # Preprocess Images
-        contentImg = self.transform(contentImg)
-        styleImg = self.transform(styleImg)
+        contentImgArbi = self.transform(contentImg)
+        styleImgArbi = self.transform(styleImg)
 
         #cc,ch,cw = contentImg.size()
         #sc,sh,sw = styleImg.size()
         #content_masks = np.ones((ch,cw))
         #style_masks = np.ones((sh,sw))
-        return contentImg.squeeze(0),styleImg.squeeze(0),content_masks,style_masks,self.image_list[index]
+        return contentImgArbi.squeeze(0),styleImgArbi.squeeze(0),content_masks,style_masks,self.image_list[index]
 
     def __len__(self):
         # You should change 0 to the total size of your dataset.

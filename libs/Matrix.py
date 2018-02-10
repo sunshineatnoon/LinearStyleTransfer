@@ -45,51 +45,36 @@ class Matrix(nn.Module):
         return tF
 '''
 
-class CNN3(nn.Module):
+class CNN(nn.Module):
     def __init__(self):
-        super(CNN3,self).__init__()
-        self.convs = nn.Sequential(nn.Conv2d(512,256,3,2,1),
+        super(CNN,self).__init__()
+        # 256x64x64
+        self.convs = nn.Sequential(nn.Conv2d(256,128,3,1,1),
                                    nn.ReLU(inplace=True),
-                                   nn.Conv2d(256,128,3,2,1),
+                                   nn.Conv2d(128,64,3,1,1),
                                    nn.ReLU(inplace=True),
-                                   nn.Conv2d(128,64,3,2,1))
-        self.fc = nn.Linear(64*4*4,64*64)
+                                   nn.Conv2d(64,32,3,1,1))
+        # 32x8x8
+        self.fc = nn.Linear(32*32,32*32)
 
     def forward(self,x):
         out = self.convs(x)
+        # 32x8x8
+        b,c,h,w = out.size()
+        out = out.view(b,c,-1)
+        # 32x64
+        out = torch.bmm(out,out.transpose(1,2)).div(h*w)
+        # 32x32
         out = out.view(out.size(0),-1)
         return self.fc(out)
 
-class CNN2(nn.Module):
-    def __init__(self):
-        super(CNN2,self).__init__()
-        # 64x64
-        self.convs = nn.Sequential(nn.Conv2d(256,128,3,2,1),
-                                   nn.ReLU(inplace=True),
-                                   nn.Conv2d(128,64,3,2,1),
-                                   nn.ReLU(inplace=True),
-                                   nn.Conv2d(64,32,3,2,1))
-        # 8x8
-        self.fc = nn.Linear(32*8*8,64*64)
-
-    def forward(self,x):
-        out = self.convs(x)
-        out = out.view(out.size(0),-1)
-        return self.fc(out)
-
-class Matrix(nn.Module):
+class MulLayer(nn.Module):
     def __init__(self,layer):
-        super(Matrix,self).__init__()
-        if(layer == 3):
-            self.snet = CNN3()
-            self.cnet = CNN3()
-            self.compress = nn.Conv2d(512,64,1,1,0)
-            self.unzip = nn.Conv2d(64,512,1,1,0)
-        elif(layer == 2):
-            self.snet = CNN2()
-            self.cnet = CNN2()
-            self.compress = nn.Conv2d(256,64,1,1,0)
-            self.unzip = nn.Conv2d(64,256,1,1,0)
+        super(MulLayer,self).__init__()
+        self.snet = CNN()
+        self.cnet = CNN()
+        self.compress = nn.Conv2d(256,32,1,1,0)
+        self.unzip = nn.Conv2d(32,256,1,1,0)
 
     def forward(self,cF,sF):
         cb,cc,ch,cw = cF.size()
@@ -103,19 +88,17 @@ class Matrix(nn.Module):
         sFF = sF.view(sb,sc,-1)
         sMean = torch.mean(sFF,dim=2,keepdim=True)
         sMean = sMean.unsqueeze(3)
-        sMean = sMean.expand_as(cF)
-        sF = sF - sMean
+        sMeanC = sMean.expand_as(cF)
+        sMeanS = sMean.expand_as(sF)
+        sF = sF - sMeanS
 
         sMatrix = self.snet(sF)
         cMatrix = self.cnet(cF)
 
-        sMatrix = sMatrix.view(sMatrix.size(0),64,64)
-        cMatrix = cMatrix.view(cMatrix.size(0),64,64)
+        sMatrix = sMatrix.view(sMatrix.size(0),32,32)
+        cMatrix = cMatrix.view(cMatrix.size(0),32,32)
 
-        # symetric regularization
-        #sMatrixReg = torch.bmm(sMatrix,torch.transpose(sMatrix,1,2))
-        #cMatrixReg = torch.bmm(cMatrix,torch.transpose(cMatrix,1,2))
-
+        #transmatrix = torch.load('transmatrix.pth')
         transmatrix = torch.bmm(sMatrix,cMatrix)
 
         compress_content = self.compress(cF)
@@ -123,4 +106,4 @@ class Matrix(nn.Module):
         compress_content = compress_content.view(b,c,-1)
         transfeature = torch.bmm(transmatrix,compress_content)
         out = self.unzip(transfeature.view(b,c,h,w))
-        return out + sMean
+        return out + sMeanC, transmatrix
