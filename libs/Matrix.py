@@ -3,14 +3,30 @@ import torch
 import torch.nn.functional as F
 
 class CNN(nn.Module):
-    def __init__(self):
+    def __init__(self,layer):
         super(CNN,self).__init__()
-        # 256x64x64
-        self.convs = nn.Sequential(nn.Conv2d(256,128,3,1,1),
-                                   nn.ReLU(inplace=True),
-                                   nn.Conv2d(128,64,3,1,1),
-                                   nn.ReLU(inplace=True),
-                                   nn.Conv2d(64,32,3,1,1))
+        if(layer == 'r31'):
+            # 256x64x64
+            self.convs = nn.Sequential(nn.Conv2d(256,128,3,1,1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Conv2d(128,64,3,1,1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Conv2d(64,32,3,1,1))
+        elif(layer == 'r21'):
+            # 128x128x128
+            self.convs = nn.Sequential(nn.Conv2d(128,64,3,2,1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Conv2d(64,32,3,1,1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Conv2d(32,32,3,1,1))
+        elif(layer == 'r41'):
+            # 512x32x32
+            self.convs = nn.Sequential(nn.Conv2d(512,256,3,1,1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Conv2d(256,128,3,1,1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Conv2d(128,32,3,1,1))
+
         # 32x8x8
         self.fc = nn.Linear(32*32,32*32)
 
@@ -28,10 +44,18 @@ class CNN(nn.Module):
 class MulLayer(nn.Module):
     def __init__(self,layer):
         super(MulLayer,self).__init__()
-        self.snet = CNN()
-        self.cnet = CNN()
-        self.compress = nn.Conv2d(256,32,1,1,0)
-        self.unzip = nn.Conv2d(32,256,1,1,0)
+        self.snet = CNN(layer)
+        self.cnet = CNN(layer)
+
+        if(layer == 'r41'):
+            self.compress = nn.Conv2d(512,32,1,1,0)
+            self.unzip = nn.Conv2d(32,512,1,1,0)
+        elif(layer == 'r31'):
+            self.compress = nn.Conv2d(256,32,1,1,0)
+            self.unzip = nn.Conv2d(32,256,1,1,0)
+        elif(layer == 'r21'):
+            self.compress = nn.Conv2d(128,32,1,1,0)
+            self.unzip = nn.Conv2d(32,128,1,1,0)
 
     def forward(self,cF,sF):
         cb,cc,ch,cw = cF.size()
@@ -55,7 +79,6 @@ class MulLayer(nn.Module):
         sMatrix = sMatrix.view(sMatrix.size(0),32,32)
         cMatrix = cMatrix.view(cMatrix.size(0),32,32)
 
-        #transmatrix = torch.load('transmatrix.pth')
         transmatrix = torch.bmm(sMatrix,cMatrix)
 
         compress_content = self.compress(cF)

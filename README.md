@@ -1,5 +1,7 @@
 # MaskStyleTransfer
 
+![](teaser.gif)
+
 ## Prerequisites
 - [Pytorch](http://pytorch.org/)
 - [torchvision](https://github.com/pytorch/vision)
@@ -35,4 +37,9 @@ python TestWithoutMask.py
 ## Test with Mask
 ```
 python TestWithMask.py
+```
+
+## Testing on Video
+```
+python VideoTransfer.py
 ```

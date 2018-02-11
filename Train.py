@@ -9,7 +9,7 @@ import torchvision.utils as vutils
 from torch.autograd import Variable
 import torchvision.models as model
 from libs.Loader import Dataset
-from libs.models import encoder4 as loss_network
+from libs.models import encoder5 as loss_network
 from libs.Matrix import MulLayer
 from libs.Criterion import LossCriterion
 from torch.utils.serialization import load_lua
@@ -21,7 +21,7 @@ parser.add_argument("--stylePath", default="/home/xtli/DATA/wikiArt/train/images
 parser.add_argument("--contentPath", default="/home/xtli/DATA/MSCOCO/train2014/images/", help='folder to training image')
 parser.add_argument("--outf", default="trainingImg/", help='folder to output images and model checkpoints')
 parser.add_argument("--content_layers", default="r41", help='layers for content')
-parser.add_argument("--style_layers", default="r41,r31,r21,r11", help='layers for style')
+parser.add_argument("--style_layers", default="r51,r41,r31,r21,r11", help='layers for style')
 parser.add_argument("--batchSize", type=int,default=8, help='batch size')
 parser.add_argument("--niter", type=int,default=100000, help='iterations to train the model')
 parser.add_argument('--loadSize', type=int, default=300, help='image size')
@@ -30,7 +30,7 @@ parser.add_argument("--lr", type=float, default=1e-4, help='learning rate, defau
 parser.add_argument("--content_weight", type=float, default=1.0, help='content loss weight')
 parser.add_argument("--style_weight", type=float, default=1e-2, help='style loss weight')
 parser.add_argument("--reg_weight", type=float, default=10, help='orthogonal loss weight')
-parser.add_argument("--log_interval", type=int, default=1000, help='maybe print interval')
+parser.add_argument("--log_interval", type=int, default=100, help='maybe print interval')
 parser.add_argument("--save_interval", type=int, default=5000, help='maybe print interval')
 parser.add_argument("--mode",default="upsample",help="unpool|upsample")
 parser.add_argument("--layer", default="r31", help='r11|r21|r31|r41')
@@ -83,29 +83,30 @@ encoder_torch = load_lua(opt.vgg_dir)
 decoder_torch = load_lua(opt.decoder_dir)
 
 # Loss Network
-encoder4_torch = load_lua('/home/xtli/WEIGHTS/WCT_Pytorch/vgg_normalised_conv4_1.t7')
+encoder4_torch = load_lua('/home/xtli/WEIGHTS/WCT_Pytorch/vgg_normalised_conv5_1.t7')
 vgg4 = loss_network(encoder4_torch)
 if(opt.layer == 'r11'):
-    matrix = MulLayer(layer='11')
+    matrix = MulLayer(layer='r11')
     vgg = encoder1(encoder_torch)
     dec = decoder1(decoder_torch)
 elif(opt.layer == 'r21'):
-    matrix = MulLayer(layer='21')
+    matrix = MulLayer(layer='r21')
     vgg = encoder2(encoder_torch)
     dec = decoder2(decoder_torch)
 elif(opt.layer == 'r31'):
-    matrix = MulLayer(layer='31')
+    matrix = MulLayer(layer='r31')
     vgg = encoder3(encoder_torch)
     dec = decoder3(decoder_torch)
 elif(opt.layer == 'r41'):
-    matrix = MulLayer(layer='41')
+    matrix = MulLayer(layer='r41')
     vgg = encoder4(encoder_torch)
     dec = decoder4(decoder_torch)
 vgg.cuda()
 dec.cuda()
-print(vgg)
-print(dec)
+print(matrix)
 for param in vgg.parameters():
+    param.requires_grad = False
+for param in dec.parameters():
     param.requires_grad = False
 ################# LOSS & OPTIMIZER #################
 criterion = LossCriterion(opt.style_layers,opt.content_layers,opt.style_weight,opt.content_weight)
@@ -169,7 +170,7 @@ for iteration in range(1,opt.niter+1):
     cF = vgg(contentV)
 
     if(opt.mode == 'unpool'):
-        feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer],contentV256,styleV256)
+        feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
         if(opt.layer == 'r11'):
             transfer = dec(feature)
         elif(opt.layer == 'r21'):
@@ -180,7 +181,7 @@ for iteration in range(1,opt.niter+1):
             transfer = dec(feature,cF['pool_idx'],cF['r12'].size(),cF['pool_idx2'],cF['r22'].size(),cF['pool_idx3'],cF['r34'].size())
     else:
         if(opt.layer == 'r41'):
-            feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer],contentV256,styleV256)
+            feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
         else:
             feature,transmatrix = matrix(cF,sF)
         transfer = dec(feature)

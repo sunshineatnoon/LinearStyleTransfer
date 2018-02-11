@@ -87,7 +87,7 @@ class encoder2(nn.Module):
         out = self.reflecPad4(out)
         out = self.conv4(out)
         out = self.relu4(out)
-        return out,pool_idx,pool.size()
+        return out
 
 class decoder2(nn.Module):
     def __init__(self,d):
@@ -115,7 +115,7 @@ class decoder2(nn.Module):
         self.conv7.weight = torch.nn.Parameter(d.get(8).weight.float())
         self.conv7.bias = torch.nn.Parameter(d.get(8).bias.float())
 
-    def forward(self,x,pool_idx,pool):
+    def forward(self,x):
         out = self.reflecPad5(x)
         out = self.conv5(out)
         out = self.relu5(out)

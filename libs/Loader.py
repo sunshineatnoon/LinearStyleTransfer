@@ -21,11 +21,12 @@ def default_loader(path):
     return Image.open(path).convert('RGB')
 
 class Dataset(data.Dataset):
-    def __init__(self,dataPath,loadSize,fineSize,test=False):
+    def __init__(self,dataPath,loadSize,fineSize,test=False,video=False):
         super(Dataset,self).__init__()
         self.dataPath = dataPath
         self.image_list = [x for x in listdir(dataPath) if is_image_file(x)]
-        #self.image_list = sorted(self.image_list)
+        if(video):
+            self.image_list = sorted(self.image_list)
         if not test:
             self.transform = transforms.Compose([
             		     transforms.Scale(fineSize),

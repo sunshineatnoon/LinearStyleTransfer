@@ -63,25 +63,25 @@ encoder_torch = load_lua(opt.vgg_dir)
 decoder_torch = load_lua(opt.decoder_dir)
 
 if(opt.layer == 'r11'):
-    matrix = MulLayer(layer='11')
+    matrix = MulLayer(layer='r11')
     vgg = encoder1(encoder_torch)
     dec = decoder1(decoder_torch)
 elif(opt.layer == 'r21'):
-    matrix = MulLayer(layer='21')
+    matrix = MulLayer(layer='r21')
     vgg = encoder2(encoder_torch)
     dec = decoder2(decoder_torch)
 elif(opt.layer == 'r31'):
-    matrix = MulLayer(layer='31')
+    matrix = MulLayer(layer='r31')
     vgg = encoder3(encoder_torch)
     dec = decoder3(decoder_torch)
 elif(opt.layer == 'r41'):
-    matrix = MulLayer(layer='41')
+    matrix = MulLayer(layer='r41')
     vgg = encoder4(encoder_torch)
     dec = decoder4(decoder_torch)
+print(matrix)
 matrix.load_state_dict(torch.load(opt.matrixPath))
 vgg.cuda()
 dec.cuda()
-print(matrix)
 for param in vgg.parameters():
     param.requires_grad = False
 for param in matrix.parameters():
@@ -112,12 +112,26 @@ for ci,(content,content256,contentName) in enumerate(content_loader):
         sF = vgg(styleV)
         cF = vgg(contentV)
 
-        feature,transmatrix = matrix(cF,sF)
-        transfer = dec(feature)
+        if(opt.mode == 'unpool'):
+            feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
+            if(opt.layer == 'r11'):
+                transfer = dec(feature)
+            elif(opt.layer == 'r21'):
+                transfer = dec(feature,cF['pool_idx'],cF['r12'].size())
+            elif(opt.layer == 'r31'):
+                transfer = dec(feature,cF['pool_idx'],cF['r12'].size(),cF['pool_idx2'],cF['r22'].size())
+            else:
+                transfer = dec(feature,cF['pool_idx'],cF['r12'].size(),cF['pool_idx2'],cF['r22'].size(),cF['pool_idx3'],cF['r34'].size())
+        else:
+            if(opt.layer == 'r41'):
+                feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
+            else:
+                feature,transmatrix = matrix(cF,sF)
+            transfer = dec(feature)
         end_time = time.time()
         if(ci > 0):
-	    totalTime += (end_time - start_time)
-	    imageCounter += 1
+           totalTime += (end_time - start_time)
+           imageCounter += 1
 
         transfer = transfer.clamp(0,1)
         vutils.save_image(transfer.data,'%s/%s_%s.png'%(opt.outf,contentName,styleName),normalize=True,scale_each=True,nrow=opt.batchSize)
