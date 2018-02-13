@@ -1,6 +1,7 @@
 from __future__ import print_function
 import argparse
 import os
+import cv2
 import torch
 import time
 import torch.backends.cudnn as cudnn
@@ -11,6 +12,7 @@ import numpy as np
 from libs.LoaderTest import Dataset
 from libs.MatrixTest import MulLayer
 from torch.utils.serialization import load_lua
+from libs.photo_smooth_fast import FastPropagator
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--vgg_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/vgg_normalised_conv3_1.t7', help='maybe print interval')
@@ -91,6 +93,7 @@ for param in matrix.parameters():
 ################# GLOBAL VARIABLE #################
 contentV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=True)
 styleV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=True)
+filt = FastPropagator()
 
 ################# GPU  #################
 if(opt.cuda):
@@ -131,7 +134,7 @@ for i,(contentImg,styleImg,cmasks,smasks,imname) in enumerate(loader):
         transfer = dec(feature)
 
     end_time = time.time()
-    if(i > 0):
+    if(i > 3):
     	totalTime += (end_time - start_time)
     	imageCounter += 1
 
@@ -140,4 +143,7 @@ for i,(contentImg,styleImg,cmasks,smasks,imname) in enumerate(loader):
     Image.fromarray(trans).save('%s/%s'%(opt.outf,imname))
     content = contentImg.squeeze(0).mul(255).clamp(0,255).byte().permute(1,2,0).cpu().numpy()
     Image.fromarray(content).save('%s/content/%s'%(opt.outf,imname))
+
+    filtered = filt.process('%s%s'%(opt.outf,imname),os.path.join(opt.outf,'content/',imname))
+    cv2.imwrite('%s/%s_proped.png'%(opt.outf,imname), filtered)
 print('Processed %d images in %f seconds. Average time is %f seconds'%(imageCounter,totalTime,(totalTime/imageCounter)))
