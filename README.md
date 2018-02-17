@@ -32,9 +32,9 @@ python TrainAE.py --vgg_dir PATH_TO_MODELS/vgg_normalised_conv3_1.t7 --decoder_d
 ### Test AutoEncoder
 
 ```
-python TestAE.py --vgg_dir PATH_TO_MODELS/vgg_normalised_conv3_1.t7 --decoder_dir PATH_TO_MODELS/feature_invertor_conv3_1.t7 --mode withCU
+python TestAE.py --vgg_dir PATH_TO_MODELS/vgg_normalised_conv3_1.t7 --decoder_dir PATH_TO_MODELS/feature_invertor_conv3_1.t7 --mode withCU --layer r31
 ```
-- NOTE: mode determines whether test with compress layer or not. To not include compress layer, use `--mode withoutCU`.
+- NOTE: mode determines whether test with compress layer or not. To not include compress layer, use `--mode withoutCU`. To test ReLU4, use `--layer r41` with correspoding weights.
 
 ## Train Style Transfer Model
 
