@@ -9,19 +9,23 @@ import torchvision.utils as vutils
 from torch.autograd import Variable
 import torchvision.models as model
 from libs.Loader import Dataset
-from libs.models import encoder5 as loss_network
-from libs.Matrix import MulLayer
+from libs.models import encoder4 as loss_network
+from libs.MatrixFixCU import MulLayer
 from libs.Criterion import LossCriterion
 from torch.utils.serialization import load_lua
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--vgg_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/vgg_normalised_conv3_1.t7', help='maybe print interval')
+parser.add_argument("--vgg4_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/vgg_normalised_conv4_1.t7', help='used for loss network')
 parser.add_argument("--decoder_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/feature_invertor_conv3_1.t7', help='maybe print interval')
 parser.add_argument("--stylePath", default="/home/xtli/DATA/wikiArt/train/images/", help='path to style image')
 parser.add_argument("--contentPath", default="/home/xtli/DATA/MSCOCO/train2014/images/", help='folder to training image')
+parser.add_argument("--new_decoder_dir", default='newAE_64/dec.pth', help='maybe print interval')
+parser.add_argument("--compress_dir", default='newAE_64/compress.pth', help='maybe print interval')
+parser.add_argument("--unzip_dir", default='newAE_64/unzip.pth', help='maybe print interval')
 parser.add_argument("--outf", default="trainingImg/", help='folder to output images and model checkpoints')
 parser.add_argument("--content_layers", default="r41", help='layers for content')
-parser.add_argument("--style_layers", default="r51,r41,r31,r21,r11", help='layers for style')
+parser.add_argument("--style_layers", default="r41,r31,r21,r11", help='layers for style')
 parser.add_argument("--batchSize", type=int,default=8, help='batch size')
 parser.add_argument("--niter", type=int,default=100000, help='iterations to train the model')
 parser.add_argument('--loadSize', type=int, default=300, help='image size')
@@ -55,27 +59,22 @@ try:
 except OSError:
     pass
 
-try:
-    os.makedirs(os.path.join('/home/xtli/Documents/ECCV2018/logs/',opt.outf))
-except OSError:
-    pass
-
 cudnn.benchmark = True
 
 ################# DATA #################
 content_dataset = Dataset(opt.contentPath,opt.loadSize,opt.fineSize)
 content_loader_ = torch.utils.data.DataLoader(dataset=content_dataset,
-					      batch_size = opt.batchSize,
-				 	      shuffle = True,
-					      num_workers = 1,
-					      drop_last = True)
+                          batch_size = opt.batchSize,
+                          shuffle = True,
+                          num_workers = 1,
+                          drop_last = True)
 content_loader = iter(content_loader_)
 style_dataset = Dataset(opt.stylePath,opt.loadSize,opt.fineSize)
 style_loader_ = torch.utils.data.DataLoader(dataset=style_dataset,
-					      batch_size = opt.batchSize,
-				 	      shuffle = True,
-					      num_workers = 1,
-					      drop_last = True)
+                          batch_size = opt.batchSize,
+                          shuffle = True,
+                          num_workers = 1,
+                          drop_last = True)
 style_loader = iter(style_loader_)
 
 ################# MODEL #################
@@ -83,26 +82,25 @@ encoder_torch = load_lua(opt.vgg_dir)
 decoder_torch = load_lua(opt.decoder_dir)
 
 # Loss Network
-encoder4_torch = load_lua('/home/xtli/WEIGHTS/WCT_Pytorch/vgg_normalised_conv5_1.t7')
+encoder4_torch = load_lua(opt.vgg4_dir)
 vgg4 = loss_network(encoder4_torch)
 if(opt.layer == 'r11'):
-    matrix = MulLayer(layer='r11')
+    matrix = MulLayer('r11',opt.compress_dir,opt.unzip_dir)
     vgg = encoder1(encoder_torch)
     dec = decoder1(decoder_torch)
 elif(opt.layer == 'r21'):
-    matrix = MulLayer(layer='r21')
+    matrix = MulLayer('r21',opt.compress_dir,opt.unzip_dir)
     vgg = encoder2(encoder_torch)
     dec = decoder2(decoder_torch)
 elif(opt.layer == 'r31'):
-    matrix = MulLayer(layer='r31')
+    matrix = MulLayer('r31',opt.compress_dir,opt.unzip_dir)
     vgg = encoder3(encoder_torch)
     dec = decoder3(decoder_torch)
 elif(opt.layer == 'r41'):
-    matrix = MulLayer(layer='r41')
+    matrix = MulLayer('r41',opt.compress_dir,opt.unzip_dir)
     vgg = encoder4(encoder_torch)
     dec = decoder4(decoder_torch)
-vgg.cuda()
-dec.cuda()
+dec.load_state_dict(torch.load(opt.new_decoder_dir))
 print(matrix)
 for param in vgg.parameters():
     param.requires_grad = False
@@ -116,10 +114,9 @@ optimizer = optim.Adam(matrix.parameters(), opt.lr)
 ################# GLOBAL VARIABLE #################
 contentV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize))
 styleV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize))
-iden_matrix = torch.eye(32)
+iden_matrix = torch.eye(64)
 iden_matrix = iden_matrix.repeat(opt.batchSize,1)
 iden_matrixV = Variable(iden_matrix)
-loss_layers = opt.style_layers + opt.content_layers
 
 ################# GPU  #################
 if(opt.cuda):
@@ -192,6 +189,7 @@ for iteration in range(1,opt.niter+1):
 
     loss,styleLoss,contentLoss = criterion(tF,sF_loss,cF_loss)
     reg_loss = mse_criterion(torch.bmm(transmatrix,torch.transpose(transmatrix,1,2)),iden_matrixV)
+    reg_loss = reg_loss * opt.reg_weight
     totalLoss = reg_loss*opt.reg_weight + loss
 
     # backward & optimization
@@ -199,7 +197,7 @@ for iteration in range(1,opt.niter+1):
     optimizer.step()
     adjust_learning_rate(optimizer,iteration)
 
-    print('Iteration: [%d/%d] Loss: %f contentLoss: %f styleLoss: %f regLoss %f Learng Rate is %7f'%(opt.niter,iteration,loss.data[0],contentLoss,styleLoss,reg_loss.data[0]*opt.reg_weight,optimizer.param_groups[0]['lr']))
+    print('Iteration: [%d/%d] Loss: %f contentLoss: %f styleLoss: %f regLoss %f Learng Rate is %7f'%(opt.niter,iteration,loss.data[0],contentLoss,styleLoss,reg_loss.data[0],optimizer.param_groups[0]['lr']))
 
     if((iteration) % opt.log_interval == 0):
         transfer = transfer.clamp(0,1)

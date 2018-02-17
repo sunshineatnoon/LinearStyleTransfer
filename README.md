@@ -32,14 +32,14 @@ python TrainAE.py --vgg_dir PATH_TO_MODELS/vgg_normalised_conv3_1.t7 --decoder_d
 ### Test AutoEncoder
 
 ```
-python TestAE.py --vgg_dir PATH_TO_MODELS/vgg_normalised_conv3_1.t7 --decoder_dir PATH_TO_MODELS/feature_invertor_conv3_1.t7 --mode withCU --layer r31
+python TestAE.py --vgg_dir PATH_TO_MODELS/vgg_normalised_conv3_1.t7 --decoder_dir PATH_TO_MODELS/feature_invertor_conv3_1.t7 --mode withCU
 ```
-- NOTE: mode determines whether test with compress layer or not. To not include compress layer, use `--mode withoutCU`. To test ReLU4, use `--layer r41` with correspoding weights.
+- NOTE: mode determines whether test with compress layer or not. To not include compress layer, use `--mode withoutCU`.
 
 ## Train Style Transfer Model
 
 ```
-python Train.py --vgg_dir PATH_TO_VGG --decoder_dir PATH_TO_DECODER --layer r31 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --reg_weight 100 --outf OUTPUT_DIR
+python Train.py --vgg_dir PATH_TO_VGG --decoder_dir PATH_TO_DECODER --layer r31 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --reg_weight 10 --outf OUTPUT_DIR --compress_dir PRE_TRAINED_COMPRESS_LAYER_PATH --unzip_dir PRE_TRAINED_UNZIP_LAYER_PATH --new_decoder_dir FINETUNED_DECODER_PATH
 ```
 Intermediate results and weight will be stored in `OUTPUT_DIR`
 
@@ -47,7 +47,7 @@ Intermediate results and weight will be stored in `OUTPUT_DIR`
 
 ## Test without Mask
 ```
-python TestWithoutMask.py
+python TestWithoutMask.py --vgg_dir PATH_TO_VGG --decoder_dir PATH_TO_DECODER --layer r31 --outf OUTPUT_DIR --compress_dir PRE_TRAINED_COMPRESS_LAYER_PATH --unzip_dir PRE_TRAINED_UNZIP_LAYER_PATH --new_decoder_dir FINETUNED_DECODER_PATH --matrixPath PATH_TO_PRE_TRAINED_MODEL
 ```
 
 ## Test with Mask
