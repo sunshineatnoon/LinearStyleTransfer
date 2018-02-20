@@ -20,6 +20,12 @@ wget http://msvocds.blob.core.windows.net/coco2014/train2014.zip
 kg download -u <username> -p <password> -c painter-by-numbers -f train.zip
 ```
 
+## Train with Matting Loss
+```
+python TrainWithMatting.py --vgg_dir PATH_TO_VGG --decoder_dir PATH_TO_DECODER --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --fineSize 256 --finetune weights/r31.pth
+```
+Note: if use `--finetune weights/r31.pth`, then we fine tune the model based on previous trained transfer model
+
 ## Training AutoEncoder
 
 ### Train Decoder with Compress and Unzip layers

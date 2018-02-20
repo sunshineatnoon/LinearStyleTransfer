@@ -5,7 +5,14 @@ import torch.nn.functional as F
 class CNN(nn.Module):
     def __init__(self,layer):
         super(CNN,self).__init__()
-        if(layer == 'r31'):
+        if(layer == 'r11'):
+            # 256x64x64
+            self.convs = nn.Sequential(nn.Conv2d(64,64,3,2,1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Conv2d(64,64,3,2,1),
+                                       nn.ReLU(inplace=True),
+                                       nn.Conv2d(64,32,3,2,1))
+        elif(layer == 'r31'):
             # 256x64x64
             self.convs = nn.Sequential(nn.Conv2d(256,128,3,1,1),
                                        nn.ReLU(inplace=True),
@@ -29,6 +36,7 @@ class CNN(nn.Module):
 
         # 32x8x8
         self.fc = nn.Linear(32*32,32*32)
+        #self.fc = nn.Linear(32*64,256*256)
 
     def forward(self,x):
         out = self.convs(x)
@@ -56,8 +64,12 @@ class MulLayer(nn.Module):
         elif(layer == 'r21'):
             self.compress = nn.Conv2d(128,32,1,1,0)
             self.unzip = nn.Conv2d(32,128,1,1,0)
+        elif(layer == 'r11'):
+            self.compress = nn.Conv2d(64,32,1,1,0)
+            self.unzip = nn.Conv2d(32,64,1,1,0)
 
     def forward(self,cF,sF):
+        cFBK = cF.clone()
         cb,cc,ch,cw = cF.size()
         cFF = cF.view(cb,cc,-1)
         cMean = torch.mean(cFF,dim=2,keepdim=True)
@@ -76,6 +88,7 @@ class MulLayer(nn.Module):
         sMatrix = self.snet(sF)
         cMatrix = self.cnet(cF)
 
+
         sMatrix = sMatrix.view(sMatrix.size(0),32,32)
         cMatrix = cMatrix.view(cMatrix.size(0),32,32)
 
@@ -84,6 +97,7 @@ class MulLayer(nn.Module):
         compress_content = self.compress(cF)
         b,c,h,w = compress_content.size()
         compress_content = compress_content.view(b,c,-1)
-        transfeature = torch.bmm(transmatrix,compress_content)
+        transfeature = torch.bmm(transmatrix,compress_content).view(b,c,h,w)
         out = self.unzip(transfeature.view(b,c,h,w))
-        return out + sMeanC, transmatrix
+        out = out + sMeanC
+        return out, transmatrix
