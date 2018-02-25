@@ -88,8 +88,8 @@ for param in matrix.parameters():
 for param in dec.parameters():
     param.requires_grad = False
 ################# GLOBAL VARIABLE #################
-contentV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=False)
-styleV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=False)
+contentV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=True)
+styleV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=True)
 
 ################# GPU  #################
 if(opt.cuda):
