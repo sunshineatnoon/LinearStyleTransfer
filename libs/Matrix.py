@@ -3,39 +3,39 @@ import torch
 import torch.nn.functional as F
 
 class CNN(nn.Module):
-    def __init__(self,layer):
+    def __init__(self,layer,matrixSize=32):
         super(CNN,self).__init__()
         if(layer == 'r11'):
             # 256x64x64
-            self.convs = nn.Sequential(nn.Conv2d(64,64,3,2,1),
+            self.convs = nn.Sequential(nn.Conv2d(64,64,3,1,1),
                                        nn.ReLU(inplace=True),
-                                       nn.Conv2d(64,64,3,2,1),
+                                       nn.Conv2d(64,64,3,1,1),
                                        nn.ReLU(inplace=True),
-                                       nn.Conv2d(64,32,3,2,1))
+                                       nn.Conv2d(64,matrixSize,3,1,1))
         elif(layer == 'r31'):
             # 256x64x64
             self.convs = nn.Sequential(nn.Conv2d(256,128,3,1,1),
                                        nn.ReLU(inplace=True),
                                        nn.Conv2d(128,64,3,1,1),
                                        nn.ReLU(inplace=True),
-                                       nn.Conv2d(64,32,3,1,1))
+                                       nn.Conv2d(64,matrixSize,3,1,1))
         elif(layer == 'r21'):
             # 128x128x128
-            self.convs = nn.Sequential(nn.Conv2d(128,64,3,2,1),
+            self.convs = nn.Sequential(nn.Conv2d(128,64,3,1,1),
                                        nn.ReLU(inplace=True),
                                        nn.Conv2d(64,32,3,1,1),
                                        nn.ReLU(inplace=True),
-                                       nn.Conv2d(32,32,3,1,1))
+                                       nn.Conv2d(32,matrixSize,3,1,1))
         elif(layer == 'r41'):
             # 512x32x32
             self.convs = nn.Sequential(nn.Conv2d(512,256,3,1,1),
                                        nn.ReLU(inplace=True),
                                        nn.Conv2d(256,128,3,1,1),
                                        nn.ReLU(inplace=True),
-                                       nn.Conv2d(128,32,3,1,1))
+                                       nn.Conv2d(128,matrixSize,3,1,1))
 
         # 32x8x8
-        self.fc = nn.Linear(32*32,32*32)
+        self.fc = nn.Linear(matrixSize*matrixSize,matrixSize*matrixSize)
         #self.fc = nn.Linear(32*64,256*256)
 
     def forward(self,x):
@@ -50,23 +50,24 @@ class CNN(nn.Module):
         return self.fc(out)
 
 class MulLayer(nn.Module):
-    def __init__(self,layer):
+    def __init__(self,layer,matrixSize=32):
         super(MulLayer,self).__init__()
-        self.snet = CNN(layer)
-        self.cnet = CNN(layer)
+        self.snet = CNN(layer,matrixSize)
+        self.cnet = CNN(layer,matrixSize)
+        self.matrixSize = matrixSize
 
         if(layer == 'r41'):
-            self.compress = nn.Conv2d(512,32,1,1,0)
-            self.unzip = nn.Conv2d(32,512,1,1,0)
+            self.compress = nn.Conv2d(512,matrixSize,1,1,0)
+            self.unzip = nn.Conv2d(matrixSize,512,1,1,0)
         elif(layer == 'r31'):
-            self.compress = nn.Conv2d(256,32,1,1,0)
-            self.unzip = nn.Conv2d(32,256,1,1,0)
+            self.compress = nn.Conv2d(256,matrixSize,1,1,0)
+            self.unzip = nn.Conv2d(matrixSize,256,1,1,0)
         elif(layer == 'r21'):
-            self.compress = nn.Conv2d(128,32,1,1,0)
-            self.unzip = nn.Conv2d(32,128,1,1,0)
+            self.compress = nn.Conv2d(128,matrixSize,1,1,0)
+            self.unzip = nn.Conv2d(matrixSize,128,1,1,0)
         elif(layer == 'r11'):
-            self.compress = nn.Conv2d(64,32,1,1,0)
-            self.unzip = nn.Conv2d(32,64,1,1,0)
+            self.compress = nn.Conv2d(64,matrixSize,1,1,0)
+            self.unzip = nn.Conv2d(matrixSize,64,1,1,0)
 
     def forward(self,cF,sF):
         cFBK = cF.clone()
@@ -89,8 +90,8 @@ class MulLayer(nn.Module):
         cMatrix = self.cnet(cF)
 
 
-        sMatrix = sMatrix.view(sMatrix.size(0),32,32)
-        cMatrix = cMatrix.view(cMatrix.size(0),32,32)
+        sMatrix = sMatrix.view(sMatrix.size(0),self.matrixSize,self.matrixSize)
+        cMatrix = cMatrix.view(cMatrix.size(0),self.matrixSize,self.matrixSize)
 
         transmatrix = torch.bmm(sMatrix,cMatrix)
 

@@ -9,15 +9,12 @@ import torchvision.utils as vutils
 from torch.autograd import Variable
 from PIL import Image
 from libs.Loader import Dataset
-from libs.MatrixFixCU import MulLayer
+from libs.Matrix import MulLayer
 from torch.utils.serialization import load_lua
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--vgg_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/vgg_normalised_conv3_1.t7', help='maybe print interval')
 parser.add_argument("--decoder_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/feature_invertor_conv3_1.t7', help='maybe print interval')
-parser.add_argument("--new_decoder_dir", default='newAE_64/dec.pth', help='maybe print interval')
-parser.add_argument("--compress_dir", default='newAE_64/compress.pth', help='maybe print interval')
-parser.add_argument("--unzip_dir", default='newAE_64/unzip.pth', help='maybe print interval')
 parser.add_argument("--matrixPath", default='weights/r31.pth', help='maybe print interval')
 parser.add_argument("--stylePath", default="data/style/", help='path to style image')
 parser.add_argument("--contentPath", default="data/content/", help='folder to training image')
@@ -67,24 +64,23 @@ encoder_torch = load_lua(opt.vgg_dir)
 decoder_torch = load_lua(opt.decoder_dir)
 
 if(opt.layer == 'r11'):
-    matrix = MulLayer('r11',opt.compress_dir,opt.unzip_dir)
+    matrix = MulLayer('r11')
     vgg = encoder1(encoder_torch)
     dec = decoder1(decoder_torch)
 elif(opt.layer == 'r21'):
-    matrix = MulLayer('r21',opt.compress_dir,opt.unzip_dir)
+    matrix = MulLayer('r21')
     vgg = encoder2(encoder_torch)
     dec = decoder2(decoder_torch)
 elif(opt.layer == 'r31'):
-    matrix = MulLayer('r31',opt.compress_dir,opt.unzip_dir)
+    matrix = MulLayer('r31')
     vgg = encoder3(encoder_torch)
     dec = decoder3(decoder_torch)
 elif(opt.layer == 'r41'):
-    matrix = MulLayer('r41',opt.compress_dir,opt.unzip_dir)
+    matrix = MulLayer('r41')
     vgg = encoder4(encoder_torch)
     dec = decoder4(decoder_torch)
 print(matrix)
 matrix.load_state_dict(torch.load(opt.matrixPath))
-dec.load_state_dict(torch.load(opt.new_decoder_dir))
 for param in vgg.parameters():
     param.requires_grad = False
 for param in matrix.parameters():
@@ -94,17 +90,12 @@ for param in dec.parameters():
 ################# GLOBAL VARIABLE #################
 contentV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=False)
 styleV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=False)
-iden_matrix = torch.eye(64)
-iden_matrix = iden_matrix.repeat(opt.batchSize,1)
-iden_matrixV = Variable(iden_matrix)
-mse_criterion = nn.MSELoss()
 
 ################# GPU  #################
 if(opt.cuda):
     vgg.cuda()
     dec.cuda()
     matrix.cuda()
-    iden_matrixV = iden_matrixV.cuda()
     contentV = contentV.cuda()
     styleV = styleV.cuda()
 totalTime = 0
@@ -138,8 +129,7 @@ for ci,(content,content256,contentName) in enumerate(content_loader):
             else:
                 feature,transmatrix = matrix(cF,sF)
             transfer = dec(feature)
-        reg_loss = mse_criterion(torch.bmm(transmatrix,torch.transpose(transmatrix,1,2)),iden_matrixV)
-        print('reg loss is %f.'%reg_loss.data[0])
+
         end_time = time.time()
         if(ci > 0):
            totalTime += (end_time - start_time)

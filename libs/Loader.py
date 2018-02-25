@@ -36,6 +36,7 @@ class Dataset(data.Dataset):
         else:
             self.transform = transforms.Compose([
             		     transforms.Scale(fineSize),
+            		     transforms.CenterCrop(fineSize),
             		     transforms.ToTensor()])
 
         self.test = test
