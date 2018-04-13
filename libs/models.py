@@ -240,6 +240,7 @@ class decoder3(nn.Module):
         self.conv11.bias = torch.nn.Parameter(d.get(15).bias.float())
 
     def forward(self,x):
+        output = {}
         out = self.reflecPad7(x)
         out = self.conv7(out)
         out = self.relu7(out)
@@ -249,8 +250,8 @@ class decoder3(nn.Module):
         out = self.relu8(out)
         out = self.reflecPad9(out)
         out = self.conv9(out)
-        out = self.relu9(out)
-        out = self.unpool2(out)
+        out_relu9 = self.relu9(out)
+        out = self.unpool2(out_relu9)
         out = self.reflecPad10(out)
         out = self.conv10(out)
         out = self.relu10(out)
@@ -339,19 +340,18 @@ class encoder4(nn.Module):
         self.conv10.bias = torch.nn.Parameter(vgg.get(29).bias.float())
         self.relu10 = nn.ReLU(inplace=True)
         # 28 x 28
-    def forward(self,x,sF=None,contentV256=None,styleV256=None,matrix11=None,matrix21=None,matrix31=None):
+    def forward(self,x,sF=None,matrix11=None,matrix21=None,matrix31=None):
         output = {}
         out = self.conv1(x)
         out = self.reflecPad1(out)
         out = self.conv2(out)
         output['r11'] = self.relu2(out)
         if(matrix11 is not None):
-            feature,_ = matrix11(output['r11'],sF['r11'],contentV256,styleV256)
-            out = self.reflecPad7(feature)
+            feature1,transmatrix1 = matrix11(output['r11'],sF['r11'])
+            out = self.reflecPad7(feature1)
         else:
             out = self.reflecPad7(output['r11'])
 
-        #out = self.reflecPad3(output['r11'])
         out = self.conv3(out)
         output['r12'] = self.relu3(out)
 
@@ -360,12 +360,11 @@ class encoder4(nn.Module):
         out = self.conv4(out)
         output['r21'] = self.relu4(out)
         if(matrix21 is not None):
-            feature,_ = matrix21(output['r21'],sF['r21'],contentV256,styleV256)
-            out = self.reflecPad7(feature)
+            feature2,transmatrix2 = matrix21(output['r21'],sF['r21'])
+            out = self.reflecPad7(feature2)
         else:
             out = self.reflecPad7(output['r21'])
 
-        #out = self.reflecPad5(output['r21'])
         out = self.conv5(out)
         output['r22'] = self.relu5(out)
 
@@ -374,8 +373,8 @@ class encoder4(nn.Module):
         out = self.conv6(out)
         output['r31'] = self.relu6(out)
         if(matrix31 is not None):
-            feature,_ = matrix31(output['r31'],sF['r31'],contentV256,styleV256)
-            out = self.reflecPad7(feature)
+            feature3,transmatrix3 = matrix31(output['r31'],sF['r31'])
+            out = self.reflecPad7(feature3)
         else:
             out = self.reflecPad7(output['r31'])
         out = self.conv7(out)
@@ -393,7 +392,7 @@ class encoder4(nn.Module):
         out = self.reflecPad10(output['p3'])
         out = self.conv10(out)
         output['r41'] = self.relu10(out)
-        #return [output[key] for key in out_keys]
+
         return output
 
 class decoder4(nn.Module):

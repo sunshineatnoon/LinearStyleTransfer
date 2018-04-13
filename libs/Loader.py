@@ -25,18 +25,18 @@ class Dataset(data.Dataset):
         super(Dataset,self).__init__()
         self.dataPath = dataPath
         self.image_list = [x for x in listdir(dataPath) if is_image_file(x)]
+        self.image_list = sorted(self.image_list)
         if(video):
             self.image_list = sorted(self.image_list)
         if not test:
             self.transform = transforms.Compose([
             		     transforms.Scale(fineSize),
             		     transforms.RandomCrop(fineSize),
-                             transforms.RandomHorizontalFlip(),
+                         transforms.RandomHorizontalFlip(),
             		     transforms.ToTensor()])
         else:
             self.transform = transforms.Compose([
             		     transforms.Scale(fineSize),
-            		     transforms.CenterCrop(fineSize),
             		     transforms.ToTensor()])
 
         self.test = test

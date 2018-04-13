@@ -68,8 +68,9 @@ class MulLayer(nn.Module):
         elif(layer == 'r11'):
             self.compress = nn.Conv2d(64,matrixSize,1,1,0)
             self.unzip = nn.Conv2d(matrixSize,64,1,1,0)
+        self.transmatrix = None
 
-    def forward(self,cF,sF):
+    def forward(self,cF,sF,trans=True):
         cFBK = cF.clone()
         cb,cc,ch,cw = cF.size()
         cFF = cF.view(cb,cc,-1)
@@ -86,19 +87,23 @@ class MulLayer(nn.Module):
         sMeanS = sMean.expand_as(sF)
         sF = sF - sMeanS
 
-        sMatrix = self.snet(sF)
-        cMatrix = self.cnet(cF)
-
-
-        sMatrix = sMatrix.view(sMatrix.size(0),self.matrixSize,self.matrixSize)
-        cMatrix = cMatrix.view(cMatrix.size(0),self.matrixSize,self.matrixSize)
-
-        transmatrix = torch.bmm(sMatrix,cMatrix)
 
         compress_content = self.compress(cF)
         b,c,h,w = compress_content.size()
         compress_content = compress_content.view(b,c,-1)
-        transfeature = torch.bmm(transmatrix,compress_content).view(b,c,h,w)
-        out = self.unzip(transfeature.view(b,c,h,w))
-        out = out + sMeanC
-        return out, transmatrix
+
+        if(trans):
+            cMatrix = self.cnet(cF)
+            sMatrix = self.snet(sF)
+
+            sMatrix = sMatrix.view(sMatrix.size(0),self.matrixSize,self.matrixSize)
+            cMatrix = cMatrix.view(cMatrix.size(0),self.matrixSize,self.matrixSize)
+            transmatrix = torch.bmm(sMatrix,cMatrix)
+            transfeature = torch.bmm(transmatrix,compress_content).view(b,c,h,w)
+            out = self.unzip(transfeature.view(b,c,h,w))
+            out = out + sMeanC
+            return out, transmatrix
+        else:
+            out = self.unzip(compress_content.view(b,c,h,w))
+            out = out + cMean
+            return out
