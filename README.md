@@ -1,12 +1,14 @@
 # Linear Style Transfer for Fast Artistic Style Transfer
 
-![](doc/images/chicago_paste.png)
+<img src="doc/images/chicago_paste.png" height="150" hspace="5"><img src="doc/images/photo_content.png" height="150" hspace="5"><img src="doc/images/content.gif" height="150" hspace="5">
+
+<img src="doc/images/chicago_27.png" height="150" hspace="5"><img src="doc/images/in5_result.png" height="150" hspace="5"><img src="doc/images/test.gif" height="150" hspace="5">
 
 ## Prerequisites
 - [Pytorch](http://pytorch.org/)
 - [torchvision](https://github.com/pytorch/vision)
 - [imageio](https://pypi.python.org/pypi/imageio) for GIF generation
-- [opencv] (https://opencv.org/) for video generation
+- [opencv](https://opencv.org/) for video generation
 
 ## Image Style Transfer
 - Clone from github: `git clone https://github.com/sunshineatnoon/LinearStyleTransfer`
