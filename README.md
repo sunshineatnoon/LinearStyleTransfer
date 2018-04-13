@@ -22,7 +22,7 @@ tar -zxvf models.tar
 ```
 python TestArtistic.py --vgg_dir models/vgg_normalised_conv4_1.t7 --decoder_dir models/feature_invertor_conv4_1.t7 --matrixPath models/layer4.pth --layer r41
 ```
-or transfer features output by relu_31, then
+or conduct style transfer on relu_31 features
 ```
 python TestArtistic.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/layer3.pth --layer r31
 ```
@@ -46,13 +46,13 @@ python real-time-demo.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_di
 wget http://msvocds.blob.core.windows.net/coco2014/train2014.zip
 ```
 - WikiArt
-- Either manually download from [kaggle](https://www.kaggle.com/c/painter-by-numbers).
-- Or install [kaggle-cli](https://github.com/floydwch/kaggle-cli) and download by running:
-```
-kg download -u <username> -p <password> -c painter-by-numbers -f train.zip
-```
+  - Either manually download from [kaggle](https://www.kaggle.com/c/painter-by-numbers).
+  - Or install [kaggle-cli](https://github.com/floydwch/kaggle-cli) and download by running:
+  ```
+  kg download -u <username> -p <password> -c painter-by-numbers -f train.zip
+  ```
 
-- Training
+### Training
 ```
 python Train.py --vgg_dir models/vgg_normalised_conv4_1.t7 --decoder_dir models/feature_invertor_conv4_1.t7 --layer r41 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --outf OUTPUT_DIR
 ```
