@@ -1,4 +1,4 @@
-# Linear Style Transfer for Fast Artistic Style Transfer
+# Learning Linear Transformations for Fast Arbitrary Style Transfer
 
 <img src="doc/images/chicago_paste.png" height="150" hspace="5"><img src="doc/images/photo_content.png" height="150" hspace="5"><img src="doc/images/content.gif" height="150" hspace="5">
 
