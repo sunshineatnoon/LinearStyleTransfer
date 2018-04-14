@@ -12,7 +12,7 @@
 
 ## Image Style Transfer
 - Clone from github: `git clone https://github.com/sunshineatnoon/LinearStyleTransfer`
-- Download pre-trained models from [google drive](https://drive.google.com/open?id=1nBRM9KX4N0HV0uPItU1RuCved9q-vXdM)(131MB).
+- Download pre-trained models from [google drive](https://drive.google.com/open?id=1nBRM9KX4N0HV0uPItU1RuCved9q-vXdM) (131MB).
 - Uncompress to root folder :
 ```
 cd LinearStyleTransfer
