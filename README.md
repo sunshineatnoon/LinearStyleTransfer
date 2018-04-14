@@ -10,7 +10,8 @@
 - [imageio](https://pypi.python.org/pypi/imageio) for GIF generation
 - [opencv](https://opencv.org/) for video generation
 
-** All code tested on Ubuntu 16.04, pytorch 0.3.1, opencv 3.4.0 **
+**All code tested on Ubuntu 16.04, pytorch 0.3.1, and opencv 3.4.0**
+
 ## Image Style Transfer
 - Clone from github: `git clone https://github.com/sunshineatnoon/LinearStyleTransfer`
 - Download pre-trained models from [google drive](https://drive.google.com/open?id=1nBRM9KX4N0HV0uPItU1RuCved9q-vXdM) (131MB).
