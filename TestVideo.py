@@ -18,11 +18,11 @@ import torchvision.transforms as transforms
 from PIL import Image
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--vgg_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/vgg_normalised_conv3_1.t7', help='maybe print interval')
-parser.add_argument("--decoder_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/feature_invertor_conv3_1.t7', help='maybe print interval')
+parser.add_argument("--vgg_dir", default='models/vgg_normalised_conv3_1.t7', help='maybe print interval')
+parser.add_argument("--decoder_dir", default='models/feature_invertor_conv3_1.t7', help='maybe print interval')
 parser.add_argument("--style", default="data/style/in2.jpg", help='path to style image')
 parser.add_argument("--contentPath", default="data/videos/content/ambush_1/", help='folder to training image')
-parser.add_argument("--matrixPath", default="weights/r31.pth", help='path to pre-trained model')
+parser.add_argument("--matrixPath", default="models/r31.pth", help='path to pre-trained model')
 parser.add_argument('--loadSize', type=int, default=256, help='image size')
 parser.add_argument('--fineSize', type=int, default=256, help='image size')
 parser.add_argument("--name",default="test",help="name of generated video")

@@ -15,9 +15,9 @@ from libs.models import encoder1,encoder2,encoder3,encoder4
 from libs.models import decoder1,decoder2,decoder3,decoder4
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--vgg_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/vgg_normalised_conv4_1.t7', help='maybe print interval')
-parser.add_argument("--decoder_dir", default='/home/xtli/WEIGHTS/WCT_Pytorch/feature_invertor_conv4_1.t7', help='maybe print interval')
-parser.add_argument("--matrixPath", default='weights/r41.pth', help='maybe print interval')
+parser.add_argument("--vgg_dir", default='models/vgg_normalised_conv4_1.t7', help='maybe print interval')
+parser.add_argument("--decoder_dir", default='models/feature_invertor_conv4_1.t7', help='maybe print interval')
+parser.add_argument("--matrixPath", default='models/r41.pth', help='maybe print interval')
 parser.add_argument("--stylePath", default="data/style/", help='path to style image')
 parser.add_argument("--contentPath", default="data/content/", help='folder to training image')
 parser.add_argument("--outf", default="Artistic/", help='folder for transferred images')

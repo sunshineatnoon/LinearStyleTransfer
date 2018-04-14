@@ -12,7 +12,7 @@
 
 ## Image Style Transfer
 - Clone from github: `git clone https://github.com/sunshineatnoon/LinearStyleTransfer`
-- Download pre-trained models from [google drive]().
+- Download pre-trained models from [google drive](https://drive.google.com/open?id=1nBRM9KX4N0HV0uPItU1RuCved9q-vXdM)(131MB).
 - Uncompress to root folder :
 ```
 cd LinearStyleTransfer
@@ -53,11 +53,16 @@ wget http://msvocds.blob.core.windows.net/coco2014/train2014.zip
   ```
 
 ### Training
+To train a model that transfers relu4_1 features, run:
 ```
 python Train.py --vgg_dir models/vgg_normalised_conv4_1.t7 --decoder_dir models/feature_invertor_conv4_1.t7 --layer r41 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --outf OUTPUT_DIR
 ```
-or if train a model that transfers relu3_1:
+or train a model that transfers relu3_1 features:
 ```
 python Train.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --layer r31 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --outf OUTPUT_DIR
 ```
+Key hyper-parameters:
+- style_layers: which features to compute style loss.
+- style_weight: larger style weight leads to heavier style in transferred images.
+
 Intermediate results and weight will be stored in `OUTPUT_DIR`
