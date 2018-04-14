@@ -17,21 +17,20 @@ from libs.models import encoder1,encoder2,encoder3,encoder4
 from libs.models import decoder1,decoder2,decoder3,decoder4
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--vgg_dir", default='models/vgg_normalised_conv3_1.t7', help='maybe print interval')
-parser.add_argument("--decoder_dir", default='models/feature_invertor_conv3_1.t7', help='maybe print interval')
-parser.add_argument("--matrixPath", default='models/r31.pth', help='maybe print interval')
+parser.add_argument("--vgg_dir", default='models/vgg_normalised_conv3_1.t7', help='pre-trained encoder path')
+parser.add_argument("--decoder_dir", default='models/feature_invertor_conv3_1.t7', help='pre-trained decoder path')
+parser.add_argument("--matrixPath", default='models/r31.pth', help='pre-trained model path')
 parser.add_argument("--stylePath", default="data/photo_real/style/images/", help='path to style image')
-parser.add_argument("--styleSegPath", default="data/photo_real/styleSeg/", help='path to style image')
-parser.add_argument("--contentPath", default="data/photo_real/content/images/", help='folder to training image')
-parser.add_argument("--contentSegPath", default="data/photo_real/contentSeg/", help='folder to training image')
-parser.add_argument("--outf", default="PhotoReal/", help='folder to output images and model checkpoints')
+parser.add_argument("--styleSegPath", default="data/photo_real/styleSeg/", help='path to style image masks')
+parser.add_argument("--contentPath", default="data/photo_real/content/images/", help='path to content image')
+parser.add_argument("--contentSegPath", default="data/photo_real/contentSeg/", help='path to content image masks')
+parser.add_argument("--outf", default="PhotoReal/", help='path to save output images')
 parser.add_argument("--batchSize", type=int,default=1, help='batch size')
 parser.add_argument('--fineSize', type=int, default=512, help='image size')
-parser.add_argument("--layer", default="r31", help='r11|r21|r31|r41')
+parser.add_argument("--layer", default="r31", help='features of which layer to transform, either r31 or r41')
 
 ################# PREPARATIONS #################
 opt = parser.parse_args()
-# turn content layers and style layers to a list
 opt.cuda = torch.cuda.is_available()
 print(opt)
 
@@ -52,15 +51,7 @@ loader = torch.utils.data.DataLoader(dataset=dataset,
 encoder_torch = load_lua(opt.vgg_dir)
 decoder_torch = load_lua(opt.decoder_dir)
 
-if(opt.layer == 'r11'):
-    matrix = MulLayer(layer='r11')
-    vgg = encoder1(encoder_torch)
-    dec = decoder1(decoder_torch)
-elif(opt.layer == 'r21'):
-    matrix = MulLayer(layer='r21')
-    vgg = encoder2(encoder_torch)
-    dec = decoder2(decoder_torch)
-elif(opt.layer == 'r31'):
+if(opt.layer == 'r31'):
     matrix = MulLayer(layer='r31')
     vgg = encoder3(encoder_torch)
     dec = decoder3(decoder_torch)
@@ -69,8 +60,6 @@ elif(opt.layer == 'r41'):
     vgg = encoder4(encoder_torch)
     dec = decoder4(decoder_torch)
 matrix.load_state_dict(torch.load(opt.matrixPath))
-vgg.cuda()
-dec.cuda()
 for param in vgg.parameters():
     param.requires_grad = False
 for param in matrix.parameters():

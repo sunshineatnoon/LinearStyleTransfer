@@ -81,7 +81,6 @@ class Dataset(data.Dataset):
     def __init__(self,contentPath,stylePath,contentSegPath,styleSegPath,fineSize):
         super(Dataset,self).__init__()
         self.contentPath = contentPath
-        # TODO: this could be slow if the video is huge
         self.image_list = [x for x in listdir(contentPath) if is_image_file(x)]
         self.stylePath = stylePath
         self.contentSegPath = contentSegPath

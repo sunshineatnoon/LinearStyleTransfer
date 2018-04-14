@@ -21,15 +21,15 @@ import numpy as np
 import cv2
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--vgg_dir", default='models/vgg_normalised_conv3_1.t7', help='maybe print interval')
-parser.add_argument("--decoder_dir", default='models/feature_invertor_conv3_1.t7', help='maybe print interval')
+parser.add_argument("--vgg_dir", default='models/vgg_normalised_conv3_1.t7', help='pre-trained encoder path')
+parser.add_argument("--decoder_dir", default='models/feature_invertor_conv3_1.t7', help='pre-trained decoder path')
 parser.add_argument("--style", default="data/style/in2.jpg", help='path to style image')
 parser.add_argument("--matrixPath", default="models/r31.pth", help='path to pre-trained model')
-parser.add_argument('--loadSize', type=int, default=256, help='image size')
-parser.add_argument('--fineSize', type=int, default=256, help='image size')
-parser.add_argument("--name",default="test",help="name of generated video")
-parser.add_argument("--layer",default="r31",help="which layer")
-parser.add_argument("--outf",default="videos",help="which layer")
+parser.add_argument('--loadSize', type=int, default=256, help='scale image size')
+parser.add_argument('--fineSize', type=int, default=256, help='crop image size')
+parser.add_argument("--name",default="transferred_video",help="name of generated video")
+parser.add_argument("--layer",default="r31",help="features of which layer to transfer")
+parser.add_argument("--outf",default="real_time_demo_output",help="output folder")
 
 ################# PREPARATIONS #################
 opt = parser.parse_args()
@@ -51,19 +51,12 @@ def loadImg(imgPath):
                 transforms.ToTensor()])
     return transform(img)
 style = Variable(loadImg(opt.style).unsqueeze(0),volatile=True)
+
 ################# MODEL #################
 encoder_torch = load_lua(opt.vgg_dir)
 decoder_torch = load_lua(opt.decoder_dir)
 
-if(opt.layer == 'r11'):
-    matrix = MulLayer(layer='r11')
-    vgg = encoder1(encoder_torch)
-    dec = decoder1(decoder_torch)
-elif(opt.layer == 'r21'):
-    matrix = MulLayer(layer='r21')
-    vgg = encoder2(encoder_torch)
-    dec = decoder2(decoder_torch)
-elif(opt.layer == 'r31'):
+if(opt.layer == 'r31'):
     matrix = MulLayer(layer='r31')
     vgg = encoder3(encoder_torch)
     dec = decoder3(decoder_torch)
@@ -98,7 +91,7 @@ cap = cv2.VideoCapture(0)
 cap.set(3,256)
 cap.set(4,512)
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-out = cv2.VideoWriter('out.avi',fourcc,20.0,(512,256))
+out = cv2.VideoWriter(os.path.join(opt.outf,opt.name+'.avi'),fourcc,20.0,(512,256))
 
 
 sF = vgg(style)

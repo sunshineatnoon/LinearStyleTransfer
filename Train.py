@@ -16,28 +16,27 @@ from libs.models import encoder1,encoder2,encoder3,encoder4
 from libs.models import decoder1,decoder2,decoder3,decoder4
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--vgg_dir", default='models/vgg_normalised_conv3_1.t7', help='maybe print interval')
+parser.add_argument("--vgg_dir", default='models/vgg_normalised_conv3_1.t7', help='pre-trained encoder path')
 parser.add_argument("--loss_network_dir", default='models/vgg_normalised_conv5_1.t7', help='used for loss network')
-parser.add_argument("--decoder_dir", default='models/feature_invertor_conv3_1.t7', help='maybe print interval')
-parser.add_argument("--stylePath", default="/home/xtli/DATA/wikiArt/train/images/", help='path to style image')
-parser.add_argument("--contentPath", default="/home/xtli/DATA/MSCOCO/train2014/images/", help='folder to training image')
-parser.add_argument("--outf", default="trainingImg/", help='folder to output images and model checkpoints')
+parser.add_argument("--decoder_dir", default='models/feature_invertor_conv3_1.t7', help='pre-trained decoder path')
+parser.add_argument("--stylePath", default="/home/xtli/DATA/wikiArt/train/images/", help='path to wikiArt dataset')
+parser.add_argument("--contentPath", default="/home/xtli/DATA/MSCOCO/train2014/images/", help='path to MSCOCO dataset')
+parser.add_argument("--outf", default="trainingOutput/", help='folder to output images and model checkpoints')
 parser.add_argument("--content_layers", default="r41", help='layers for content')
 parser.add_argument("--style_layers", default="r11,r21,r31,r41", help='layers for style')
 parser.add_argument("--batchSize", type=int,default=8, help='batch size')
 parser.add_argument("--niter", type=int,default=100000, help='iterations to train the model')
-parser.add_argument('--loadSize', type=int, default=300, help='image size')
-parser.add_argument('--fineSize', type=int, default=256, help='image size')
-parser.add_argument("--lr", type=float, default=1e-4, help='learning rate, default=0.0002')
+parser.add_argument('--loadSize', type=int, default=300, help='scale image size')
+parser.add_argument('--fineSize', type=int, default=256, help='crop image size')
+parser.add_argument("--lr", type=float, default=1e-4, help='learning rate')
 parser.add_argument("--content_weight", type=float, default=1.0, help='content loss weight')
 parser.add_argument("--style_weight", type=float, default=0.02, help='style loss weight')
-parser.add_argument("--log_interval", type=int, default=100, help='maybe print interval')
-parser.add_argument("--save_interval", type=int, default=5000, help='maybe print interval')
-parser.add_argument("--layer", default="r31", help='r11|r21|r31|r41')
+parser.add_argument("--log_interval", type=int, default=500, help='log interval')
+parser.add_argument("--save_interval", type=int, default=5000, help='checkpoint save interval')
+parser.add_argument("--layer", default="r31", help='which features to transfer, either r31 or r41')
 
 ################# PREPARATIONS #################
 opt = parser.parse_args()
-# turn content layers and style layers to a list
 opt.content_layers = opt.content_layers.split(',')
 opt.style_layers = opt.style_layers.split(',')
 opt.cuda = torch.cuda.is_available()
@@ -70,19 +69,10 @@ style_loader = iter(style_loader_)
 ################# MODEL #################
 encoder_torch = load_lua(opt.vgg_dir)
 decoder_torch = load_lua(opt.decoder_dir)
-
-# Loss Network
 encoder4_torch = load_lua(opt.loss_network_dir)
+
 vgg4 = loss_network(encoder4_torch)
-if(opt.layer == 'r11'):
-    matrix = MulLayer('r11')
-    vgg = encoder1(encoder_torch)
-    dec = decoder1(decoder_torch)
-elif(opt.layer == 'r21'):
-    matrix = MulLayer('r21')
-    vgg = encoder2(encoder_torch)
-    dec = decoder2(decoder_torch)
-elif(opt.layer == 'r31'):
+if(opt.layer == 'r31'):
     matrix = MulLayer('r31')
     vgg = encoder3(encoder_torch)
     dec = decoder3(decoder_torch)
@@ -90,6 +80,7 @@ elif(opt.layer == 'r41'):
     matrix = MulLayer('r41')
     vgg = encoder4(encoder_torch)
     dec = decoder4(decoder_torch)
+
 for param in vgg.parameters():
     param.requires_grad = False
 for param in dec.parameters():
@@ -119,28 +110,27 @@ def adjust_learning_rate(optimizer, iteration):
         param_group['lr'] = opt.lr / (1+iteration*1e-5)
 
 for iteration in range(1,opt.niter+1):
-    # preprocess data
+    optimizer.zero_grad()
     try:
-        content,content256,_ = content_loader.next()
+        content,_ = content_loader.next()
     except IOError:
-        content,content256,_ = content_loader.next()
+        content,_ = content_loader.next()
     except StopIteration:
         content_loader = iter(content_loader_)
-        content,content256,_ = content_loader.next()
+        content,_ = content_loader.next()
     except:
         continue
 
     try:
-        style,style256,_ = style_loader.next()
+        style,_ = style_loader.next()
     except IOError:
-        style,style256,_ = style_loader.next()
+        style,_ = style_loader.next()
     except StopIteration:
         style_loader = iter(style_loader_)
-        style,style256,_ = style_loader.next()
+        style,_ = style_loader.next()
     except:
         continue
 
-    # RGB to BGR
     contentV.data.resize_(content.size()).copy_(content)
     styleV.data.resize_(style.size()).copy_(style)
 
@@ -148,8 +138,6 @@ for iteration in range(1,opt.niter+1):
     sF = vgg(styleV)
     cF = vgg(contentV)
 
-    # one pass, transfer
-    optimizer.zero_grad()
     if(opt.layer == 'r41'):
         feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
     else:
@@ -159,7 +147,6 @@ for iteration in range(1,opt.niter+1):
     sF_loss = vgg4(styleV)
     cF_loss = vgg4(contentV)
     tF = vgg4(transfer)
-
     loss,styleLoss,contentLoss = criterion(tF,sF_loss,cF_loss)
 
     # backward & optimization
@@ -168,7 +155,6 @@ for iteration in range(1,opt.niter+1):
     print('Iteration: [%d/%d] Loss: %.4f contentLoss: %.4f styleLoss: %.4f Learng Rate is %.6f'%(opt.niter,iteration,loss.data[0],contentLoss,styleLoss,optimizer.param_groups[0]['lr']))
 
     adjust_learning_rate(optimizer,iteration)
-
 
     if((iteration) % opt.log_interval == 0):
         transfer = transfer.clamp(0,1)
