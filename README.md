@@ -33,6 +33,8 @@ python TestArtistic.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir 
 ```
 python TestPhotoReal.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
 ```
+Note: images with `_filtered.png` as postfix are images filtered by bilateral filter after style transfer.
+
 - Video style transfer
 ```
 python TestVideo.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
