@@ -20,23 +20,23 @@ tar -zxvf models.tar
 ```
 - Artistic style transfer
 ```
-python TestArtistic.py --vgg_dir models/vgg_normalised_conv4_1.t7 --decoder_dir models/feature_invertor_conv4_1.t7 --matrixPath models/layer4.pth --layer r41
+python TestArtistic.py --vgg_dir models/vgg_normalised_conv4_1.t7 --decoder_dir models/feature_invertor_conv4_1.t7 --matrixPath models/r41.pth --layer r41
 ```
 or conduct style transfer on relu_31 features
 ```
-python TestArtistic.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/layer3.pth --layer r31
+python TestArtistic.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
 ```
 - Photo-real style transfer
 ```
-python TestPhotoReal.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/layer3.pth --layer r31
+python TestPhotoReal.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
 ```
 - Video style transfer
 ```
-python TestVideo.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/layer3.pth --layer r31
+python TestVideo.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
 ```
 - Real-time video demo
 ```
-python real-time-demo.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/layer3.pth --layer r31
+python real-time-demo.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
 ```
 
 ## Model Training
