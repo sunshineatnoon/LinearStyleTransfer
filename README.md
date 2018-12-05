@@ -73,3 +73,13 @@ Key hyper-parameters:
 - style_weight: larger style weight leads to heavier style in transferred images.
 
 Intermediate results and weight will be stored in `OUTPUT_DIR`
+
+### Citation
+```
+@article{li2018learning,
+  title={Learning Linear Transformations for Fast Arbitrary Style Transfer},
+  author={Xueting Li and Sifei Liu and Jan Kautz and Ming-Hsuan Yang},
+  journal={arXiv preprint arXiv:1808.04537},
+  year={2018}
+}
+```
