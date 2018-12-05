@@ -1,4 +1,5 @@
-# Learning Linear Transformations for Fast Arbitrary Style Transfer
+## <center>Learning Linear Transformations for Fast Arbitrary Style Transfer</center>
+
 **[[Paper]](https://arxiv.org/abs/1808.04537v1)**
 
 <img src="doc/images/chicago_paste.png" height="150" hspace="5"><img src="doc/images/photo_content.png" height="150" hspace="5"><img src="doc/images/content.gif" height="150" hspace="5">
@@ -66,7 +67,6 @@ python Train.py --vgg_dir models/vgg_r41.pth --decoder_dir models/dec_r41.pth --
 or train a model that transfers relu3_1 features:
 ```
 python Train.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --layer r31 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --outf OUTPUT_DIR
-
 ```
 Key hyper-parameters:
 - style_layers: which features to compute style loss.
