@@ -12,7 +12,7 @@
 
 **All code tested on Ubuntu 16.04, pytorch 0.4.1, and opencv 3.4.2**
 
-## Image Style Transfer
+## Style Transfer
 - Clone from github: `git clone https://github.com/sunshineatnoon/LinearStyleTransfer`
 - Download pre-trained models from [google drive](https://drive.google.com/open?id=1naZcc-Uw9xuFyR3cSyUjEJL7aOa1MfO7).
 - Uncompress to root folder :
@@ -21,7 +21,7 @@ cd LinearStyleTransfer
 unzip models.zip
 rm models.zip
 ```
-- Artistic style transfer
+#### Artistic style transfer
 ```
 python TestArtistic.py --vgg_dir models/vgg_r41.pth --decoder_dir models/dec_r41.pth --matrixPath models/r41.pth --layer r41
 ```
@@ -29,17 +29,17 @@ or conduct style transfer on relu_31 features
 ```
 python TestArtistic.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --matrixPath models/r31.pth --layer r31
 ```
-- Photo-real style transfer
+#### Photo-realistic style transfer
 ```
 python TestPhotoReal.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --matrixPath models/r31.pth --layer r31
 ```
 Note: images with `_filtered.png` as postfix are images filtered by bilateral filter after style transfer.
 
-- Video style transfer
+#### Video style transfer
 ```
 python TestVideo.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --matrix_dir models/r31.pth --layer r31
 ```
-- Real-time video demo
+#### Real-time video demo
 ```
 python real-time-demo.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --matrixPath models/r31.pth --layer r31
 ```
