@@ -20,7 +20,7 @@
 ```
 cd LinearStyleTransfer
 unzip models.zip
-rm models.tar.gz
+rm models.zip
 ```
 - Artistic style transfer
 ```
