@@ -1,5 +1,4 @@
-## <center>Learning Linear Transformations for Fast Arbitrary Style Transfer</center>
-
+## Learning Linear Transformations for Fast Arbitrary Style Transfer
 **[[Paper]](https://arxiv.org/abs/1808.04537v1)**
 
 <img src="doc/images/chicago_paste.png" height="150" hspace="5"><img src="doc/images/photo_content.png" height="150" hspace="5"><img src="doc/images/content.gif" height="150" hspace="5">
