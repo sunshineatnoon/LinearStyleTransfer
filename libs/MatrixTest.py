@@ -1,10 +1,6 @@
-import torch.nn as nn
-import torch
-import torch.nn.functional as F
 import cv2
-from torch.autograd import Variable
-import torchvision.utils as vutils
-
+import torch
+import torch.nn as nn
 
 class CNN(nn.Module):
     def __init__(self):
@@ -29,7 +25,7 @@ class CNN(nn.Module):
             mask = mask.long()
             if(torch.sum(mask) >= 10):
                 mask = mask.view(-1)
-                fgmask = Variable((mask==1).nonzero().squeeze(1))
+                fgmask = (mask==1).nonzero().squeeze(1)
                 fgmask = fgmask.cuda()
                 selectFeature = torch.index_select(x,1,fgmask) # 32x96
                 # subtract mean
@@ -51,7 +47,7 @@ class CNN(nn.Module):
             mask = mask.long()
             if(torch.sum(mask) >= 10):
                 mask = mask.view(-1)
-                fgmask = Variable((mask==1).nonzero().squeeze(1))
+                fgmask = (mask==1).nonzero().squeeze(1)
                 fgmask = fgmask.cuda()
                 selectFeature = torch.index_select(feature,1,fgmask) # 32x96
                 tc,tN = selectFeature.size()
@@ -81,7 +77,7 @@ class MulLayer(nn.Module):
         compress_content = compress_content.view(cc,-1)
         transfeature = compress_content.clone()
         color_code_number = 9
-        finalSMean = Variable(torch.zeros(cF.size()).cuda(0))
+        finalSMean = torch.zeros(cF.size()).cuda(0)
         finalSMean = finalSMean.view(256,-1)
         for i in range(color_code_number):
             cmask = cmasks[i].clone().squeeze(0)
@@ -96,11 +92,11 @@ class MulLayer(nn.Module):
             if(torch.sum(cmask) >= 10 and torch.sum(smask) >= 10
                and (i in sMatrices) and (i in cMatrices)):
                 cmask = cmask.view(-1)
-                fgcmask = Variable((cmask==1).nonzero().squeeze(1))
+                fgcmask = (cmask==1).nonzero().squeeze(1)
                 fgcmask = fgcmask.cuda()
 
                 smask = smask.view(-1)
-                fgsmask = Variable((smask==1).nonzero().squeeze(1))
+                fgsmask = (smask==1).nonzero().squeeze(1)
                 fgsmask = fgsmask.cuda()
 
                 sFF = sF.view(sc,-1)

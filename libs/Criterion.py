@@ -14,7 +14,7 @@ class styleLoss(nn.Module):
         tCov = GramMatrix()(target)
 
         loss = nn.MSELoss(size_average=False)(iMean,tMean) + nn.MSELoss(size_average=False)(iCov,tCov)
-	return loss/tb
+        return loss/tb
 
 class GramMatrix(nn.Module):
     def forward(self,input):
@@ -38,7 +38,6 @@ class LossCriterion(nn.Module):
         self.contentLosses = [nn.MSELoss()] * len(content_layers)
 
     def forward(self,tF,sF,cF):
-        #feature = feature.detach()
         # content loss
         totalContentLoss = 0
         for i,layer in enumerate(self.content_layers):
@@ -60,4 +59,4 @@ class LossCriterion(nn.Module):
         totalStyleLoss = totalStyleLoss * self.style_weight
         loss = totalStyleLoss + totalContentLoss
 
-        return loss,totalStyleLoss.data[0],totalContentLoss.data[0]
+        return loss,totalStyleLoss,totalContentLoss

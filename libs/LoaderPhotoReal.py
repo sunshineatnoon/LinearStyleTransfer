@@ -1,15 +1,8 @@
-from PIL import Image
-import torchvision.transforms as transforms
-import torchvision.utils as vutils
-import torch.utils.data as data
-from os import listdir
-from os.path import join
-import numpy as np
-import torch
 import os
-import torch.nn as nn
-from torch.autograd import Variable
-import numpy as np
+import torch
+from PIL import Image
+import torch.utils.data as data
+import torchvision.transforms as transforms
 
 def is_image_file(filename):
     return any(filename.endswith(extension) for extension in [".png", ".jpg", ".jpeg"])
@@ -81,13 +74,13 @@ class Dataset(data.Dataset):
     def __init__(self,contentPath,stylePath,contentSegPath,styleSegPath,fineSize):
         super(Dataset,self).__init__()
         self.contentPath = contentPath
-        self.image_list = [x for x in listdir(contentPath) if is_image_file(x)]
+        self.image_list = [x for x in os.listdir(contentPath) if is_image_file(x)]
         self.stylePath = stylePath
         self.contentSegPath = contentSegPath
         self.styleSegPath = styleSegPath
         self.fineSize = fineSize
         self.transform = transforms.Compose([
-        		transforms.Scale(fineSize),
+        		transforms.Resize(fineSize),
         		transforms.ToTensor()])
 
     def __getitem__(self,index):

@@ -1,4 +1,5 @@
 # Learning Linear Transformations for Fast Arbitrary Style Transfer
+**[[Paper]](https://arxiv.org/abs/1808.04537v1)**
 
 <img src="doc/images/chicago_paste.png" height="150" hspace="5"><img src="doc/images/photo_content.png" height="150" hspace="5"><img src="doc/images/content.gif" height="150" hspace="5">
 
@@ -10,38 +11,38 @@
 - [imageio](https://pypi.python.org/pypi/imageio) for GIF generation
 - [opencv](https://opencv.org/) for video generation
 
-**All code tested on Ubuntu 16.04, pytorch 0.3.1, and opencv 3.4.0**
+**All code tested on Ubuntu 16.04, pytorch 0.4.1, and opencv 3.4.2**
 
 ## Image Style Transfer
 - Clone from github: `git clone https://github.com/sunshineatnoon/LinearStyleTransfer`
-- Download pre-trained models from [google drive](https://drive.google.com/open?id=1nBRM9KX4N0HV0uPItU1RuCved9q-vXdM) (131MB).
+- Download pre-trained models from [google drive](https://drive.google.com/open?id=1naZcc-Uw9xuFyR3cSyUjEJL7aOa1MfO7).
 - Uncompress to root folder :
 ```
 cd LinearStyleTransfer
-tar -zxvf models.tar.gz
+unzip models.zip
 rm models.tar.gz
 ```
 - Artistic style transfer
 ```
-python TestArtistic.py --vgg_dir models/vgg_normalised_conv4_1.t7 --decoder_dir models/feature_invertor_conv4_1.t7 --matrixPath models/r41.pth --layer r41
+python TestArtistic.py --vgg_dir models/vgg_r41.pth --decoder_dir models/dec_r41.pth --matrixPath models/r41.pth --layer r41
 ```
 or conduct style transfer on relu_31 features
 ```
-python TestArtistic.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
+python TestArtistic.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --matrixPath models/r31.pth --layer r31
 ```
 - Photo-real style transfer
 ```
-python TestPhotoReal.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
+python TestPhotoReal.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --matrixPath models/r31.pth --layer r31
 ```
 Note: images with `_filtered.png` as postfix are images filtered by bilateral filter after style transfer.
 
 - Video style transfer
 ```
-python TestVideo.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
+python TestVideo.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --matrix_dir models/r31.pth --layer r31
 ```
 - Real-time video demo
 ```
-python real-time-demo.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --matrixPath models/r31.pth --layer r31
+python real-time-demo.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --matrixPath models/r31.pth --layer r31
 ```
 
 ## Model Training
@@ -60,11 +61,12 @@ wget http://msvocds.blob.core.windows.net/coco2014/train2014.zip
 ### Training
 To train a model that transfers relu4_1 features, run:
 ```
-python Train.py --vgg_dir models/vgg_normalised_conv4_1.t7 --decoder_dir models/feature_invertor_conv4_1.t7 --layer r41 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --outf OUTPUT_DIR
+python Train.py --vgg_dir models/vgg_r41.pth --decoder_dir models/dec_r41.pth --layer r41 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --outf OUTPUT_DIR
 ```
 or train a model that transfers relu3_1 features:
 ```
-python Train.py --vgg_dir models/vgg_normalised_conv3_1.t7 --decoder_dir models/feature_invertor_conv3_1.t7 --layer r31 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --outf OUTPUT_DIR
+python Train.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31.pth --layer r31 --contentPath PATH_TO_MSCOCO --stylePath PATH_TO_WikiArt --outf OUTPUT_DIR
+
 ```
 Key hyper-parameters:
 - style_layers: which features to compute style loss.

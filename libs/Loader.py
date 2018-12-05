@@ -1,18 +1,7 @@
-from PIL import Image
-from random import randint
-import torchvision.transforms as transforms
-import torchvision.utils as vutils
-import torch.utils.data as data
-from os import listdir
-from os.path import join
-import numpy as np
-import torch
 import os
-import torch.nn as nn
-from torch.autograd import Variable
-import numpy as np
-import random
-import torch.nn.functional as F
+from PIL import Image
+import torch.utils.data as data
+import torchvision.transforms as transforms
 
 def is_image_file(filename):
     return any(filename.endswith(extension) for extension in [".png", ".jpg", ".jpeg"])
@@ -24,20 +13,20 @@ class Dataset(data.Dataset):
     def __init__(self,dataPath,loadSize,fineSize,test=False,video=False):
         super(Dataset,self).__init__()
         self.dataPath = dataPath
-        self.image_list = [x for x in listdir(dataPath) if is_image_file(x)]
+        self.image_list = [x for x in os.listdir(dataPath) if is_image_file(x)]
         self.image_list = sorted(self.image_list)
         if(video):
             self.image_list = sorted(self.image_list)
         if not test:
             self.transform = transforms.Compose([
-            		     transforms.Scale(fineSize),
-            		     transforms.RandomCrop(fineSize),
-                         transforms.RandomHorizontalFlip(),
-            		     transforms.ToTensor()])
+            		         transforms.Resize(fineSize),
+            		         transforms.RandomCrop(fineSize),
+                             transforms.RandomHorizontalFlip(),
+            		         transforms.ToTensor()])
         else:
             self.transform = transforms.Compose([
-            		     transforms.Scale(fineSize),
-            		     transforms.ToTensor()])
+            		         transforms.Resize(fineSize),
+            		         transforms.ToTensor()])
 
         self.test = test
 

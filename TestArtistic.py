@@ -1,41 +1,40 @@
-from __future__ import print_function
 import argparse
 import os
-import time
 import torch
-import torch.nn as nn
-import torch.backends.cudnn as cudnn
-import torchvision.utils as vutils
-from torch.autograd import Variable
-from PIL import Image
 from libs.Loader import Dataset
 from libs.Matrix import MulLayer
-from torch.utils.serialization import load_lua
-from libs.models import encoder1,encoder2,encoder3,encoder4
-from libs.models import decoder1,decoder2,decoder3,decoder4
+import torchvision.utils as vutils
+import torch.backends.cudnn as cudnn
+from libs.models import encoder3,encoder4
+from libs.models import decoder3,decoder4
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--vgg_dir", default='models/vgg_normalised_conv4_1.t7', help='pre-trained encoder path')
-parser.add_argument("--decoder_dir", default='models/feature_invertor_conv4_1.t7', help='pre-trained decoder path')
-parser.add_argument("--matrixPath", default='models/r41.pth', help='pre-trained model path')
-parser.add_argument("--stylePath", default="data/style/", help='path to style image')
-parser.add_argument("--contentPath", default="data/content/", help='path to frames')
-parser.add_argument("--outf", default="Artistic/", help='path to transferred images')
-parser.add_argument("--batchSize", type=int,default=1, help='batch size')
-parser.add_argument('--loadSize', type=int, default=256, help='scale image size')
-parser.add_argument('--fineSize', type=int, default=256, help='crop image size')
-parser.add_argument("--layer", default="r41", help='which features to transfer, either r31 or r41')
+parser.add_argument("--vgg_dir", default='models/vgg_r41.pth',
+                    help='pre-trained encoder path')
+parser.add_argument("--decoder_dir", default='models/dec_r41.pth',
+                    help='pre-trained decoder path')
+parser.add_argument("--matrixPath", default='models/r41.pth',
+                    help='pre-trained model path')
+parser.add_argument("--stylePath", default="data/style/",
+                    help='path to style image')
+parser.add_argument("--contentPath", default="data/content/",
+                    help='path to frames')
+parser.add_argument("--outf", default="Artistic/",
+                    help='path to transferred images')
+parser.add_argument("--batchSize", type=int,default=1,
+                    help='batch size')
+parser.add_argument('--loadSize', type=int, default=256,
+                    help='scale image size')
+parser.add_argument('--fineSize', type=int, default=256,
+                    help='crop image size')
+parser.add_argument("--layer", default="r41",
+                    help='which features to transfer, either r31 or r41')
 
 ################# PREPARATIONS #################
 opt = parser.parse_args()
 opt.cuda = torch.cuda.is_available()
 print(opt)
-
-try:
-    os.makedirs(opt.outf)
-except OSError:
-    pass
-
+os.makedirs(opt.outf,exist_ok=True)
 cudnn.benchmark = True
 
 ################# DATA #################
@@ -51,17 +50,16 @@ style_loader = torch.utils.data.DataLoader(dataset=style_dataset,
                                            num_workers = 1)
 
 ################# MODEL #################
-encoder_torch = load_lua(opt.vgg_dir)
-decoder_torch = load_lua(opt.decoder_dir)
-
 if(opt.layer == 'r31'):
     matrix = MulLayer('r31')
-    vgg = encoder3(encoder_torch)
-    dec = decoder3(decoder_torch)
+    vgg = encoder3()
+    dec = decoder3()
 elif(opt.layer == 'r41'):
     matrix = MulLayer('r41')
-    vgg = encoder4(encoder_torch)
-    dec = decoder4(decoder_torch)
+    vgg = encoder4()
+    dec = decoder4()
+vgg.load_state_dict(torch.load(opt.vgg_dir))
+dec.load_state_dict(torch.load(opt.decoder_dir))
 matrix.load_state_dict(torch.load(opt.matrixPath))
 
 for param in vgg.parameters():
@@ -72,8 +70,8 @@ for param in dec.parameters():
     param.requires_grad = False
 
 ################# GLOBAL VARIABLE #################
-contentV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=True)
-styleV = Variable(torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize),volatile=True)
+contentV = torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize)
+styleV = torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize)
 
 ################# GPU  #################
 if(opt.cuda):
@@ -91,14 +89,15 @@ for ci,(content,contentName) in enumerate(content_loader):
         styleV.data.resize_(style.size()).copy_(style)
 
         # forward
-        sF = vgg(styleV)
-        cF = vgg(contentV)
+        with torch.no_grad():
+            sF = vgg(styleV)
+            cF = vgg(contentV)
 
-        if(opt.layer == 'r41'):
-            feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
-        else:
-            feature,transmatrix = matrix(cF,sF)
-        transfer = dec(feature)
+            if(opt.layer == 'r41'):
+                feature,transmatrix = matrix(cF[opt.layer],sF[opt.layer])
+            else:
+                feature,transmatrix = matrix(cF,sF)
+            transfer = dec(feature)
 
         transfer = transfer.clamp(0,1)
         vutils.save_image(transfer.data,'%s/%s_%s.png'%(opt.outf,contentName,styleName),normalize=True,scale_each=True,nrow=opt.batchSize)

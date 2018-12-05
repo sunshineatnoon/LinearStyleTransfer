@@ -1,25 +1,14 @@
-from __future__ import division
-import torch
-from torch.utils.serialization import load_lua
-import scipy.misc
-import scipy.sparse
-import scipy.sparse.linalg
-import numpy as np
-import time
-from numpy.lib.stride_tricks import as_strided
 import os
-from PIL import Image
 import cv2
-from cv2.ximgproc import jointBilateralFilter
-# TODO: prerequites of imageio
+import torch
 import imageio
+from cv2.ximgproc import jointBilateralFilter
 
 def numpy2cv2(cont,style,prop,width,height):
     cont = cont.transpose((1,2,0))
     cont = cont[...,::-1]
     cont = cont * 255
     cont = cv2.resize(cont,(width,height))
-    #cv2.resize(iimg,(width,height))
     style = style.transpose((1,2,0))
     style = style[...,::-1]
     style = style * 255
@@ -30,7 +19,6 @@ def numpy2cv2(cont,style,prop,width,height):
     prop = prop * 255
     prop = cv2.resize(prop,(width,height))
 
-    #return np.concatenate((cont,np.concatenate((style,prop),axis=1)),axis=1)
     return prop,cont
 
 def makeVideo(content,style,props,name):
@@ -45,7 +33,6 @@ def makeVideo(content,style,props,name):
         prop,cont = numpy2cv2(content[j],style,props[j],width,height)
         cv2.imwrite('prop.png',prop)
         cv2.imwrite('content.png',cont)
-        # TODO: this is ugly, fix this
         imgj = cv2.imread('prop.png')
         imgc = cv2.imread('content.png')
 
