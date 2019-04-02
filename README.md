@@ -20,6 +20,7 @@ cd LinearStyleTransfer
 unzip models.zip
 rm models.zip
 ```
+
 #### Artistic style transfer
 ```
 python TestArtistic.py
@@ -30,7 +31,7 @@ python TestArtistic.py --vgg_dir models/vgg_r31.pth --decoder_dir models/dec_r31
 ```
 
 #### Photo-realistic style transfer
-For photo-realistic style transfer, we need first clone and compile the [pytorch_spn](https://github.com/Liusifei/pytorch_spn) repository.
+For photo-realistic style transfer, we need first compile the [pytorch_spn](https://github.com/Liusifei/pytorch_spn) repository.
 ```
 cd libs/pytorch_spn
 sh make.sh
