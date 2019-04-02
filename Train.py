@@ -7,6 +7,7 @@ from libs.Loader import Dataset
 from libs.Matrix import MulLayer
 import torchvision.utils as vutils
 import torch.backends.cudnn as cudnn
+from libs.utils import print_options
 from libs.Criterion import LossCriterion
 from libs.models import encoder3,encoder4
 from libs.models import decoder3,decoder4
@@ -62,6 +63,7 @@ if(opt.cuda):
 
 os.makedirs(opt.outf,exist_ok=True)
 cudnn.benchmark = True
+print_options(opt)
 
 ################# DATA #################
 content_dataset = Dataset(opt.contentPath,opt.loadSize,opt.fineSize)
@@ -148,8 +150,8 @@ for iteration in range(1,opt.niter+1):
     except:
         continue
 
-    contentV.data.resize_(content.size()).copy_(content)
-    styleV.data.resize_(style.size()).copy_(style)
+    contentV.resize_(content.size()).copy_(content)
+    styleV.resize_(style.size()).copy_(style)
 
     # forward
     sF = vgg(styleV)
@@ -176,7 +178,7 @@ for iteration in range(1,opt.niter+1):
 
     if((iteration) % opt.log_interval == 0):
         transfer = transfer.clamp(0,1)
-        concat = torch.cat((content,style,transfer.data.cpu()),dim=0)
+        concat = torch.cat((content,style,transfer.cpu()),dim=0)
         vutils.save_image(concat,'%s/%d.png'%(opt.outf,iteration),normalize=True,scale_each=True,nrow=opt.batchSize)
 
     if(iteration > 0 and (iteration) % opt.save_interval == 0):

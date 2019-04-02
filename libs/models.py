@@ -542,3 +542,121 @@ class encoder5(nn.Module):
         out = self.conv14(out)
         output['r51'] = self.relu14(out)
         return output
+
+class decoder5(nn.Module):
+    def __init__(self):
+        super(decoder5,self).__init__()
+
+        # decoder
+        self.reflecPad15 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv15 = nn.Conv2d(512,512,3,1,0)
+        self.relu15 = nn.ReLU(inplace=True)
+
+        self.unpool = nn.UpsamplingNearest2d(scale_factor=2)
+        # 28 x 28
+
+        self.reflecPad16 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv16 = nn.Conv2d(512,512,3,1,0)
+        self.relu16 = nn.ReLU(inplace=True)
+        # 28 x 28
+
+        self.reflecPad17 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv17 = nn.Conv2d(512,512,3,1,0)
+        self.relu17 = nn.ReLU(inplace=True)
+        # 28 x 28
+
+        self.reflecPad18 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv18 = nn.Conv2d(512,512,3,1,0)
+        self.relu18 = nn.ReLU(inplace=True)
+        # 28 x 28
+
+        self.reflecPad19 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv19 = nn.Conv2d(512,256,3,1,0)
+        self.relu19 = nn.ReLU(inplace=True)
+        # 28 x 28
+
+        self.unpool2 = nn.UpsamplingNearest2d(scale_factor=2)
+        # 56 x 56
+
+        self.reflecPad20 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv20 = nn.Conv2d(256,256,3,1,0)
+        self.relu20 = nn.ReLU(inplace=True)
+        # 56 x 56
+
+        self.reflecPad21 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv21 = nn.Conv2d(256,256,3,1,0)
+        self.relu21 = nn.ReLU(inplace=True)
+
+        self.reflecPad22 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv22 = nn.Conv2d(256,256,3,1,0)
+        self.relu22 = nn.ReLU(inplace=True)
+
+        self.reflecPad23 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv23 = nn.Conv2d(256,128,3,1,0)
+        self.relu23 = nn.ReLU(inplace=True)
+
+        self.unpool3 = nn.UpsamplingNearest2d(scale_factor=2)
+        # 112 X 112
+
+        self.reflecPad24 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv24 = nn.Conv2d(128,128,3,1,0)
+        self.relu24 = nn.ReLU(inplace=True)
+
+        self.reflecPad25 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv25 = nn.Conv2d(128,64,3,1,0)
+        self.relu25 = nn.ReLU(inplace=True)
+
+        self.unpool4 = nn.UpsamplingNearest2d(scale_factor=2)
+
+        self.reflecPad26 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv26 = nn.Conv2d(64,64,3,1,0)
+        self.relu26 = nn.ReLU(inplace=True)
+
+        self.reflecPad27 = nn.ReflectionPad2d((1,1,1,1))
+        self.conv27 = nn.Conv2d(64,3,3,1,0)
+
+    def forward(self,x):
+        # decoder
+        out = self.reflecPad15(x)
+        out = self.conv15(out)
+        out = self.relu15(out)
+        out = self.unpool(out)
+        out = self.reflecPad16(out)
+        out = self.conv16(out)
+        out = self.relu16(out)
+        out = self.reflecPad17(out)
+        out = self.conv17(out)
+        out = self.relu17(out)
+        out = self.reflecPad18(out)
+        out = self.conv18(out)
+        out = self.relu18(out)
+        out = self.reflecPad19(out)
+        out = self.conv19(out)
+        out = self.relu19(out)
+        out = self.unpool2(out)
+        out = self.reflecPad20(out)
+        out = self.conv20(out)
+        out = self.relu20(out)
+        out = self.reflecPad21(out)
+        out = self.conv21(out)
+        out = self.relu21(out)
+        out = self.reflecPad22(out)
+        out = self.conv22(out)
+        out = self.relu22(out)
+        out = self.reflecPad23(out)
+        out = self.conv23(out)
+        out = self.relu23(out)
+        out = self.unpool3(out)
+        out = self.reflecPad24(out)
+        out = self.conv24(out)
+        out = self.relu24(out)
+        out = self.reflecPad25(out)
+        out = self.conv25(out)
+        out = self.relu25(out)
+        out = self.unpool4(out)
+        out = self.reflecPad26(out)
+        out = self.conv26(out)
+        out = self.relu26(out)
+        out = self.reflecPad27(out)
+        out = self.conv27(out)
+        return out

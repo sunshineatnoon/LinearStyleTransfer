@@ -1,12 +1,13 @@
-import argparse
 import os
 import torch
+import argparse
 from libs.Loader import Dataset
 from libs.Matrix import MulLayer
 import torchvision.utils as vutils
 import torch.backends.cudnn as cudnn
-from libs.models import encoder3,encoder4
-from libs.models import decoder3,decoder4
+from libs.utils import print_options
+from libs.models import encoder3,encoder4, encoder5
+from libs.models import decoder3,decoder4, decoder5
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--vgg_dir", default='models/vgg_r41.pth',
@@ -33,7 +34,8 @@ parser.add_argument("--layer", default="r41",
 ################# PREPARATIONS #################
 opt = parser.parse_args()
 opt.cuda = torch.cuda.is_available()
-print(opt)
+print_options(opt)
+
 os.makedirs(opt.outf,exist_ok=True)
 cudnn.benchmark = True
 
@@ -51,23 +53,15 @@ style_loader = torch.utils.data.DataLoader(dataset=style_dataset,
 
 ################# MODEL #################
 if(opt.layer == 'r31'):
-    matrix = MulLayer('r31')
     vgg = encoder3()
     dec = decoder3()
 elif(opt.layer == 'r41'):
-    matrix = MulLayer('r41')
     vgg = encoder4()
     dec = decoder4()
+matrix = MulLayer(opt.layer)
 vgg.load_state_dict(torch.load(opt.vgg_dir))
 dec.load_state_dict(torch.load(opt.decoder_dir))
 matrix.load_state_dict(torch.load(opt.matrixPath))
-
-for param in vgg.parameters():
-    param.requires_grad = False
-for param in matrix.parameters():
-    param.requires_grad = False
-for param in dec.parameters():
-    param.requires_grad = False
 
 ################# GLOBAL VARIABLE #################
 contentV = torch.Tensor(opt.batchSize,3,opt.fineSize,opt.fineSize)
@@ -83,10 +77,10 @@ if(opt.cuda):
 
 for ci,(content,contentName) in enumerate(content_loader):
     contentName = contentName[0]
-    contentV.data.resize_(content.size()).copy_(content)
+    contentV.resize_(content.size()).copy_(content)
     for sj,(style,styleName) in enumerate(style_loader):
         styleName = styleName[0]
-        styleV.data.resize_(style.size()).copy_(style)
+        styleV.resize_(style.size()).copy_(style)
 
         # forward
         with torch.no_grad():
@@ -100,5 +94,5 @@ for ci,(content,contentName) in enumerate(content_loader):
             transfer = dec(feature)
 
         transfer = transfer.clamp(0,1)
-        vutils.save_image(transfer.data,'%s/%s_%s.png'%(opt.outf,contentName,styleName),normalize=True,scale_each=True,nrow=opt.batchSize)
+        vutils.save_image(transfer,'%s/%s_%s.png'%(opt.outf,contentName,styleName),normalize=True,scale_each=True,nrow=opt.batchSize)
         print('Transferred image saved at %s%s_%s.png'%(opt.outf,contentName,styleName))
