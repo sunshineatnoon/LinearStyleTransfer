@@ -1,5 +1,5 @@
 ## Learning Linear Transformations for Fast Image and Video Style Transfer
-**[[Paper]](https://arxiv.org/abs/1808.04537v1)** **[[Project Page]](https://sites.google.com/view/linear-style-transfer-cvpr19/)**
+**[[Paper]](http://openaccess.thecvf.com/content_CVPR_2019/papers/Li_Learning_Linear_Transformations_for_Fast_Image_and_Video_Style_Transfer_CVPR_2019_paper.pdf)** **[[Project Page]](https://sites.google.com/view/linear-style-transfer-cvpr19/)**
 
 <img src="doc/images/chicago_paste.png" height="149" hspace="5"><img src="doc/images/photo_content.png" height="150" hspace="5"><img src="doc/images/content.gif" height="150" hspace="5">
 <img src="doc/images/chicago_27.png" height="150" hspace="5"><img src="doc/images/in5_result.png" height="150" hspace="5"><img src="doc/images/test.gif" height="150" hspace="5">
